@@ -4,7 +4,10 @@ RUN npm i concurrently nodemon -g
 
 ADD ./sos-api ./sos-api
 WORKDIR /sos-api
-COPY ./sos-api .
+COPY ./sos-api/package.json ./sos-api/package-lock.json ./
+RUN npm install
+COPY ./sos-api ./
+
 RUN npm install
 RUN npm link
 EXPOSE 4444

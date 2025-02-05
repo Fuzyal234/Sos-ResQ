@@ -1,0 +1,31 @@
+{
+  "ts-node": {
+      "transpileOnly": true,
+      "files": true,
+      "esm": true, // «———— enabling ESM for ts-node   
+
+      "compilerOptions": {
+        "resolveJsonModule": true
+      },
+    },
+  
+    "compilerOptions": {
+      "module": "CommonJS",
+   
+      "target": "ESNext",
+      "noImplicitAny": true,
+      "sourceMap": true,
+
+         "esModuleInterop": true,
+    "moduleResolution": "node",
+      "strict": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "types": ["node"], 
+      "outDir": "dist",
+      "paths": {}
+    },
+    
+    "include": ["src/**/*.ts", "src/index.js"]
+  }
+  

@@ -1,0 +1,10 @@
+{
+  "development": {
+    "username": "admin",
+    "password": "fuzail",
+    "database": "fuzail",
+    "host": "sos-db", 
+    "dialect": "postgres",
+    "port": 5434         
+  }
+}

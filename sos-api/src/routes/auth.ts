@@ -11,32 +11,15 @@ import { userValidationSchemas } from "../validation/user";
 import User from "../models/user";
 import { authMiddleware } from "../middlewares/auth";
 import { successResponse, errorResponse } from '../helper/responses';
+import joiToJsonSchema  from "joi-to-json";
+
 
 export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({
     method: "POST",
     url: "/signup",
-    preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const { error } = userValidationSchemas.registerUserValidation.validate(request.body);
-      if (error) {
-        return reply.status(400).send(errorResponse(error.details[0].message, 400));
-      }
-
-      const { email } = request.body as { email: string };
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-        return reply.status(400).send(errorResponse("Email already exists!", 400));
-      }
-    },
-    handler: async (request, reply) => {
-      try {
-        const result = await addUser(request, reply);
-        return reply.status(201).send(successResponse("User registered successfully!", result, 201));
-      } catch (error) {
-        console.error("Error during signup:", error);
-        return reply.status(500).send(errorResponse("Internal server error.", 500));
-      }
-    },
+    schema: { body: joiToJsonSchema(userValidationSchemas.registerUserValidation) },
+    handler: addUser,
   });
 
    fastify.route({

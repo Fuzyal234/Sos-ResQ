@@ -5,65 +5,20 @@ import { session } from "../models/session";
 import { successResponse, errorResponse } from '../helper/responses';
 import { generateOTP } from '../utils/otpUtils';
 import { otpStore, sendEmail } from '../middlewares/email';
+import { createUser } from '../services/auth.service';
+import argon2 from 'argon2';
+import { CreateUserDTO } from '../types/user';
 export interface LoginRequestBody {
   email: string;
   password: string;
 }
-import argon2 from 'argon2';
-export const addUser = async (request: FastifyRequest, reply: FastifyReply) => {
-  const {
-    select_region,
-    first_name,
-    last_name,
-    date_of_birth,
-    phone_number,
-    email,
-    password,
-  } = request.body as {
-    select_region: string;
-    first_name: string;
-    last_name: string;
-    date_of_birth: string;
-    phone_number: string;
-    email: string;
-    password: string;
-  };
 
-  if (
-    !select_region ||
-    !first_name ||
-    !last_name ||
-    !date_of_birth ||
-    !phone_number ||
-    !email ||
-    !password
-  ) {
-    return reply
-      .status(400)
-      .send(errorResponse("All fields are required.", 400));
-  }
+
+export const addUser = async (request: FastifyRequest, reply: FastifyReply) => {
 
   try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return reply
-        .status(400)
-        .send(errorResponse("Email already in use.", 400));
-    }
-
-    const hashedPassword = await argon2.hash(password);
-
-    const newUser = await User.create({
-      select_region,
-      first_name,
-      last_name,
-      date_of_birth,
-      phone_number,
-      email,
-      password: hashedPassword,
-    });
-    delete newUser.dataValues.password;
-
+    const userData = request.body as CreateUserDTO;
+    const newUser = await createUser(userData);
     return reply
       .status(201)
       .send(successResponse("User registered successfully!", newUser, 201));

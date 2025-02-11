@@ -56,3 +56,31 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
     return reply.status(500).send(errorResponse("Internal Server Error", 500));
   }
 };
+
+export const adminAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
+  const authHeader = request.headers["authorization"];
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return reply.status(401).send(errorResponse("Unauthorized", 401));
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv") as {
+      user_id: number;
+      role: string;
+    };
+
+    if (!decoded || !decoded.user_id || decoded.role !== "admin") {
+      return reply.status(403).send(errorResponse("Access denied. Admins only.", 403));
+    }
+
+    // Attach user info to request for further processing
+    request.user = { id: decoded.user_id, role: decoded.role };
+
+  } catch (error) {
+    console.error("Error in adminAuthMiddleware:", error);
+    return reply.status(401).send(errorResponse("Invalid or expired token.", 401));
+  }
+};

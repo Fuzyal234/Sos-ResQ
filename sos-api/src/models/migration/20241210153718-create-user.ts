@@ -1,59 +1,66 @@
 'use strict';
+import { Sequelize,QueryInterface, DataTypes} from 'sequelize';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
     await queryInterface.createTable('users', {
-      user_id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
-      select_region: {
-        type: Sequelize.STRING,
-
-        allowNull: false,
-      },
       first_name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       last_name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       date_of_birth: {
-        type: Sequelize.DATEONLY,
+        type: DataTypes.DATEONLY,
         allowNull: false,
       },
       phone_number: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          is: /^[+]?[0-9]{10,15}$/,
+        },
       },
       email: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+          isEmail: true,
+        },
       },
       password: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
+      },
+      role: {
+        type: DataTypes.ENUM('admin', 'agent', 'sos_user'),
+        allowNull: false,
+        defaultValue: 'sos_user',
       },
       created_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: DataTypes.NOW,
       },
       updated_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: DataTypes.NOW,
       },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
     await queryInterface.dropTable('users');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_select_region";');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_role";');
   },
 };

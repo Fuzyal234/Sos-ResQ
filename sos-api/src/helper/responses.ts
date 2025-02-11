@@ -1,3 +1,4 @@
+import { ValidationErrorItem } from "joi";
 
 export const successResponse = (message: string, results: any, statusCode: number) => {
     return {
@@ -22,7 +23,7 @@ export const errorResponse = (message: string, statusCode: number) => {
     };
 };
 
-export const validationResponse = (errors: any) => {
+export const validationResponse = (errors: ValidationErrorItem[]) => {
     return {
         message: 'Validation errors',
         error: true,

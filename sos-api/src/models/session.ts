@@ -24,7 +24,7 @@ session.init(
       allowNull: false,
       references: {
         model: 'users',
-        key: 'user_id',
+        key: 'id',
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
@@ -43,7 +43,7 @@ session.init(
   }
 );
 
-session.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+session.belongsTo(User, { foreignKey: 'id', as: 'user' });
 User.hasMany(session, { foreignKey: 'user_id', as: 'sessions' });
 
 export default session;

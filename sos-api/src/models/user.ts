@@ -1,33 +1,27 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelizeInit from '../config/sequelize';
-import { v4 as uuidv4 } from 'uuid';
+import { Model, DataTypes } from "sequelize";
+import sequelizeInit from "../config/sequelize";
+import { v4 as uuidv4 } from "uuid";
 
 class User extends Model {
-  public user_id!: string;
-  public select_region!: string;
+  public id!: string;
   public first_name!: string;
   public last_name!: string;
   public date_of_birth!: Date;
   public phone_number!: string;
   public email!: string;
+  public role!: string;
   public password!: string;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
 
-User.init(
+const user = User.init(
   {
-    user_id: {
+    id: {
       type: DataTypes.UUID,
       defaultValue: uuidv4,
       primaryKey: true,
-    },
-    select_region: {
-      type: DataTypes.STRING,
-
-      allowNull: false,
-
     },
     first_name: {
       type: DataTypes.STRING,
@@ -47,7 +41,7 @@ User.init(
       validate: {
         is: {
           args: /^[+]?[0-9]{10,15}$/,
-          msg: 'Invalid phone number format.',
+          msg: "Invalid phone number format.",
         },
       },
     },
@@ -57,7 +51,7 @@ User.init(
       unique: true,
       validate: {
         isEmail: {
-          msg: 'Invalid email format.',
+          msg: "Invalid email format.",
         },
       },
     },
@@ -67,15 +61,20 @@ User.init(
       validate: {
         len: {
           args: [8, 128],
-          msg: 'Password must be between 8 and 128 characters.',
+          msg: "Password must be between 8 and 128 characters.",
         },
       },
+    },
+    role: {
+      type: DataTypes.ENUM("admin", "agent", "sos_user"),
+      allowNull: false,
+      defaultValue: "sos_user",
     },
   },
   {
     sequelize: sequelizeInit,
-    modelName: 'User',
-    tableName: 'users',
+    modelName: "User",
+    tableName: "users",
     timestamps: true,
     underscored: true,
   }

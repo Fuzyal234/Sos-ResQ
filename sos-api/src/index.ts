@@ -2,11 +2,15 @@ import Fastify from 'fastify';
 import { Configuration, CountryCode, PlaidApi, PlaidEnvironments, Products } from 'plaid';
 import sequelizeInit from './config/sequelize';
 import authRoute from './routes/auth';
+import adminAuthRoutes from './routes/admin/auth.route';
+import adminRoutes from './routes/admin/admin.route';
 
 
 const fastify = Fastify({ logger: true });
 
 fastify.register(authRoute);
+fastify.register(adminAuthRoutes);
+fastify.register(adminRoutes);
 const startServer = async () => {
   try {
     await sequelizeInit.authenticate();

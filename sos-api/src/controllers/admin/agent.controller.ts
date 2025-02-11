@@ -25,7 +25,7 @@ export const create = async (request: FastifyRequest, reply: FastifyReply) => {
 
         return reply.status(201).send(successResponse("Agent created successfully!", agent, 201));
     } catch (error) {
-        console.error("Error creating agent:", error);
+        // console.error("Error creating agent:", error);
         return reply.status(500).send(errorResponse("Internal server error.", 500));
     }
 };
@@ -37,7 +37,7 @@ export const update = async (request: FastifyRequest, reply: FastifyReply) => {
         const agent = await updateAgent(userData, id);
         return reply.status(200).send(successResponse("Agent updated successfully!", agent, 200));
     } catch (error) {
-        console.error("Error updating agent:", error);
+        // console.error("Error updating agent:", error);
         return reply.status(500).send(errorResponse("Internal server error.", 500));
     }
 };

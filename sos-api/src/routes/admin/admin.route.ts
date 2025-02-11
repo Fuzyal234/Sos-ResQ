@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { index, create } from "../../controllers/admin/agent.controller";
+import { index, create, update, show } from "../../controllers/admin/agent.controller";
 
 import { loginAdmin } from "../../controllers/admin/auth.controller";
 import { userValidationSchemas } from "../../validation/user";
@@ -12,8 +12,10 @@ import joiToJsonSchema  from "joi-to-json";
 export default async function adminRoutes(fastify: FastifyInstance) {
 
     // Agent CRUD routes
+  fastify.route({ method: "GET", url: "/admin/agents/:id", preHandler: adminAuthMiddleware, handler: show, });
   fastify.route({ method: "GET", url: "/admin/agents", preHandler: adminAuthMiddleware, handler: index, });
   fastify.route({ method: "POST", url: "/admin/agents", preHandler: adminAuthMiddleware, handler: create, });
+  fastify.route({ method: "PUT", url: "/admin/agents/:id", preHandler: adminAuthMiddleware, handler: update, });
 
 
 }

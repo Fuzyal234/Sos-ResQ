@@ -5,19 +5,11 @@ import { CreateAgentDTO } from "../../types/agent.dto";
 import { CreateUserDTO } from "../../types/user";
 import User from "../../models/user";
 import { createUser } from '../../services/auth.service';
-import { createAgent } from "../../services/admin/agent.service";
+import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
 
 export const index = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        const agents = await Agent.findAll({
-            include: [
-                {
-                    model: User,
-                    as: "user",
-                    attributes: ["id", "first_name", "last_name", "email", "phone_number"],
-                },
-            ],
-        });
+        const agents = await getAllAgents();
 
         return reply.status(200).send(successResponse("Agents fetched successfully!", agents, 200));
     } catch (error) {
@@ -40,11 +32,9 @@ export const create = async (request: FastifyRequest, reply: FastifyReply) => {
 
 export const update = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        const agent = await Agent.findByPk(request.params.id);
-        if (!agent) {
-            return reply.status(404).send(errorResponse("Agent not found.", 404));
-        }
-        await agent.update(request.body);
+        const userData = request.body as CreateAgentDTO;
+        const id = (request.params as { id: string }).id;
+        const agent = await updateAgent(userData, id);
         return reply.status(200).send(successResponse("Agent updated successfully!", agent, 200));
     } catch (error) {
         console.error("Error updating agent:", error);
@@ -52,23 +42,10 @@ export const update = async (request: FastifyRequest, reply: FastifyReply) => {
     }
 };
 
-export const destroy = async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-        const agent = await Agent.findByPk(request.params.id);
-        if (!agent) {
-            return reply.status(404).send(errorResponse("Agent not found.", 404));
-        }
-        await agent.destroy();
-        return reply.status(200).send(successResponse("Agent deleted successfully!", null, 200));
-    } catch (error) {
-        console.error("Error deleting agent:", error);
-        return reply.status(500).send(errorResponse("Internal server error.", 500));
-    }
-};
-
 export const show = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-        const agent = await Agent.findByPk(request.params.id);
+        const id = (request.params as { id: string }).id;
+        const agent = await getAgentById(id);
         if (!agent) {
             return reply.status(404).send(errorResponse("Agent not found.", 404));
         }

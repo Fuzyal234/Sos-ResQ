@@ -1,13 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
-import User from '../models/user';
-import { session } from "../models/session";
-import { successResponse, errorResponse } from '../helper/responses';
-import { generateOTP } from '../utils/otpUtils';
-import { otpStore, sendEmail } from '../middlewares/email';
-import { createUser } from '../services/auth.service';
+import User from '../../models/user';
+import { session } from "../../models/session";
+import { successResponse, errorResponse } from '../../helper/responses';
+import { generateOTP } from '../../utils/otpUtils';
+import { otpStore, sendEmail } from '../../middlewares/email';
+import { createUser } from '../../services/auth.service';
 import argon2 from 'argon2';
-import { CreateUserDTO } from '../types/user';
+import { CreateUserDTO } from '../../types/user';
 export interface LoginRequestBody {
   email: string;
   password: string;
@@ -50,20 +50,20 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     }
 
     const token = jwt.sign(
-      { user_id: user.dataValues.user_id },
+      { user_id: user.dataValues.id },
       process.env.JWT_SECRET || "devflovvdevflovvdevflovv", 
       { expiresIn: "1h" }
     );
 
-    const existingSession = await session.findOne({ where: { user_id: user.dataValues.user_id } });
+    const existingSession = await session.findOne({ where: { user_id: user.dataValues.id } });
 
     if (existingSession) {
       await session.update(
         { token }, 
-        { where: { user_id: user.dataValues.user_id } }
+        { where: { user_id: user.dataValues.id } }
       );
     } else {
-      await session.create({ user_id: user.dataValues.user_id, token });
+      await session.create({ user_id: user.dataValues.id, token });
     }
 
     const otpResponse = await sendOtp(request, reply);
@@ -73,9 +73,8 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     }
 
     const userProfile = {
-      user_id: user.dataValues.user_id,
+      user_id: user.dataValues.id,
       email: user.dataValues.email,
-      select_region:user.dataValues.select_region,
       first_name:user.dataValues.first_name,
       last_name:user.dataValues.last_name,
       date_of_birth:user.dataValues.date_of_birth,

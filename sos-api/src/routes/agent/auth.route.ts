@@ -10,15 +10,16 @@ import User from "../../models/user";
 import { authMiddleware } from "../../middlewares/auth";
 import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema  from "joi-to-json";
+import { loginAgent } from "../../controllers/agent/auth.controller";
 
 
-export default async function adminAuthRoutes(fastify: FastifyInstance) {
+export default async function agentsAuthRoutes(fastify: FastifyInstance) {
 
   fastify.route({
     method: "POST",
-    url: "/login/admin",
+    url: "/login/agent",
     schema: { body: joiToJsonSchema(userValidationSchemas.loginUser) },
-    handler: loginAdmin,
+    handler: loginAgent,
   });
 
 

@@ -6,11 +6,11 @@ import {
   sendOtp,
   verifyOtp,
   loginUser,
-} from "../controllers/auth.controller";
-import { userValidationSchemas } from "../validation/user";
-import User from "../models/user";
-import { authMiddleware } from "../middlewares/auth";
-import { successResponse, errorResponse } from '../helper/responses';
+} from "../../controllers/user/auth.controller";
+import { userValidationSchemas } from "../../validation/user";
+import User from "../../models/user";
+import { authMiddleware } from "../../middlewares/auth";
+import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema  from "joi-to-json";
 
 

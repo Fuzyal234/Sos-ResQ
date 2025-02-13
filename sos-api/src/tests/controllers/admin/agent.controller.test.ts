@@ -19,7 +19,7 @@ beforeAll(async () => {
     app.register(adminRoutes); // Register routes for testing
     await app.ready();
 });
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjFhMmMzZDQtZTVmNi03ODkwLTEyMzQtNTY3ODlhYmNkZWYwIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM5Mjk2MzczLCJleHAiOjE3MzkyOTk5NzN9.uhL7MdeUQ-TOq4r6t96Uh6eGbWWDLxlUsW2lXY1_j74";
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYjFhMmMzZDQtZTVmNi03ODkwLTEyMzQtNTY3ODlhYmNkZWYwIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM5NDcwODUyLCJleHAiOjE3Mzk0NzQ0NTJ9.ol_bhsFkX_UqPOfLgtsOAr9keoZvPlS2YdNjHx7y2XU";
 describe("Agent Controller Tests", () => {
     /**
      * Test: Get all agents

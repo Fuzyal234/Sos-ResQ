@@ -2,11 +2,11 @@ import Joi from 'joi';
 
 export const userValidationSchemas = {
   registerUserValidation: Joi.object({
-    select_region: Joi.string()
+    address: Joi.string()
       .required()
       .messages({
-        "string.base": "Select region must be a string.",
-        "string.empty": "Select region cannot be empty.",
+        "string.base": "Select address must be a string.",
+        "string.empty": "Select address cannot be empty.",
       }),
     first_name: Joi.string()
       .min(2)

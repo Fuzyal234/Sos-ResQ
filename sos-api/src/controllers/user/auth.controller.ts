@@ -5,9 +5,9 @@ import { session } from "../../models/session";
 import { successResponse, errorResponse } from '../../helper/responses';
 import { generateOTP } from '../../utils/otpUtils';
 import { otpStore, sendEmail } from '../../middlewares/email';
-import { createUser } from '../../services/auth.service';
+import { createUser, createSosUser } from '../../services/auth.service';
 import argon2 from 'argon2';
-import { CreateUserDTO } from '../../types/user';
+import { CreateSosUserDTO, CreateUserDTO } from '../../types/user';
 export interface LoginRequestBody {
   email: string;
   password: string;
@@ -17,11 +17,11 @@ export interface LoginRequestBody {
 export const addUser = async (request: FastifyRequest, reply: FastifyReply) => {
 
   try {
-    const userData = request.body as CreateUserDTO;
-    const newUser = await createUser(userData);
+    const userData = request.body as CreateSosUserDTO;
+    const newSosUser = await createSosUser(userData);
     return reply
       .status(201)
-      .send(successResponse("User registered successfully!", newUser, 201));
+      .send(successResponse("User registered successfully!", newSosUser, 201));
   } catch (error) {
     console.error("Error registering user:", error);
     return reply
@@ -39,7 +39,7 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
   }
 
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email, role: "sos_user" } });
     if (!user) {
       return reply.status(404).send(errorResponse("User not found", 404));
     }
@@ -50,7 +50,7 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     }
 
     const token = jwt.sign(
-      { user_id: user.dataValues.id },
+      { user_id: user.dataValues.id, role: user.dataValues.role },
       process.env.JWT_SECRET || "devflovvdevflovvdevflovv", 
       { expiresIn: "1h" }
     );

@@ -1,10 +1,11 @@
 
-import User from '../models/user';
+// import User from '../models/user';
+import {SosUser, User} from '../models/index';
 import { hashPassword } from '../utils/hash';
-import { CreateUserDTO } from '../types/user';
+import { CreateUserDTO, CreateSosUserDTO, SosUserResponseDTO } from '../types/user';
 
 
-export const createUser = async (data : CreateUserDTO): Promise<User> => {
+ const createUser = async (data : CreateUserDTO): Promise<User> => {
     
     let email = data.email;
     
@@ -28,3 +29,43 @@ export const createUser = async (data : CreateUserDTO): Promise<User> => {
       throw error;
     }
   };
+
+  const createSosUser = async (data : CreateSosUserDTO): Promise<SosUserResponseDTO> => {
+    
+    let email = data.email;
+    
+    try {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        throw new Error("Email already exists!");
+      }
+  
+      const hashedPassword = await hashPassword(data.password);
+      
+      const newUser = await User.create({
+        ...data,
+        password: hashedPassword,
+      });
+      const newSosUser = await SosUser.create({
+        user_id: newUser.dataValues.id,
+        address: data.address,
+      });
+      const SosUserResponse: SosUserResponseDTO = {
+        id: newSosUser.dataValues.id,
+        first_name: newUser.dataValues.first_name,
+        last_name: newUser.dataValues.last_name,
+        date_of_birth: newUser.dataValues.date_of_birth,
+        phone_number: newUser.dataValues.phone_number,
+        address: newSosUser.dataValues.address,
+      };
+      delete newUser.dataValues.password;
+      
+  
+      return SosUserResponse;
+    } catch (error) {
+      console.error("Error registering user:", error);
+      throw error;
+    }
+  };
+
+  export { createUser, createSosUser };

@@ -1,8 +1,9 @@
+'use strict';
+
 const { DataTypes } = require("sequelize");
 
-/** @param {import('sequelize').QueryInterface} queryInterface */
 module.exports = {
-  up: async (queryInterface: QueryInterface) => {
+  up: async (queryInterface) => {
     await queryInterface.createTable("subscriptions", {
       id: {
         type: DataTypes.UUID,

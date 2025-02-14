@@ -1,6 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
+import { Payment } from "./payment.model";
 
 class Subscription extends Model {
   public id!: string;
@@ -51,8 +52,6 @@ const subscription = Subscription.init(
     timestamps: true,
     underscored: true,
   }
-);    
-    export default Subscription;
-    export {
-        Subscription
-    }
+);
+
+export { Subscription }

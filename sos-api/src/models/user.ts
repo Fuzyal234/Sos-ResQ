@@ -1,7 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
-
 class User extends Model {
   public id!: string;
   public first_name!: string;

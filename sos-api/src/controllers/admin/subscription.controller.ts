@@ -3,11 +3,12 @@ import { successResponse, errorResponse } from "../../helper/responses";
 import Agent from "../../models/agent.model";
 import { CreateAgentDTO } from "../../types/agent.dto";
 import { CreateUserDTO } from "../../types/user";
-import Subscription from "../../models/subscription.model";
+import {Subscription} from "../../models/subscription.model";
 import { createUser } from '../../services/auth.service';
 import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
 import SubscriptionService  from "../../services/admin/subscription.service";
 import { CreateSubscriptionDTO } from "../../types/subscription.dto";
+import { validate as isUUID } from "uuid";
 
 class SubscriptionController {
     async index(request: FastifyRequest, reply: FastifyReply) {
@@ -35,6 +36,9 @@ class SubscriptionController {
     async show(request: FastifyRequest, reply: FastifyReply) {
         try {
             const id = (request.params as { id: string }).id;
+            if (!isUUID(id)) {
+                return reply.status(400).send(errorResponse("Invalid UUID format.", 400));
+            }
             const subscription = await SubscriptionService.getSubscriptionById(id);
             if (!subscription) {
                 return reply.status(404).send(errorResponse("Subscription not found.", 404));

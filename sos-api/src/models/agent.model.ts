@@ -39,5 +39,5 @@ Agent.init(
         underscored: true,
     }
 )
-Agent.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 export default Agent

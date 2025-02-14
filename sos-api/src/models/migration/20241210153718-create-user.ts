@@ -1,36 +1,35 @@
 'use strict';
-import { Sequelize,QueryInterface, DataTypes} from 'sequelize';
 
 module.exports = {
-  up: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('users', {
       id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
       first_name: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       last_name: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       date_of_birth: {
-        type: DataTypes.DATEONLY,
+        type: Sequelize.DATEONLY,
         allowNull: false,
       },
       phone_number: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         validate: {
           is: /^[+]?[0-9]{10,15}$/,
         },
       },
       email: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true,
         validate: {
@@ -38,28 +37,28 @@ module.exports = {
         },
       },
       password: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('admin', 'agent', 'sos_user'),
+        type: Sequelize.ENUM('admin', 'agent', 'sos_user'),
         allowNull: false,
         defaultValue: 'sos_user',
       },
       created_at: {
-        type: DataTypes.DATE,
+        type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.NOW,
       },
       updated_at: {
-        type: DataTypes.DATE,
+        type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.NOW,
       },
     });
   },
 
-  down: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('users');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_role";');
   },

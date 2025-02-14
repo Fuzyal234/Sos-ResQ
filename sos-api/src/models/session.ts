@@ -43,7 +43,5 @@ session.init(
   }
 );
 
-session.belongsTo(User, { foreignKey: 'id', as: 'user' });
-User.hasMany(session, { foreignKey: 'user_id', as: 'sessions' });
 
 export default session;

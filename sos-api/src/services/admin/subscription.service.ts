@@ -1,4 +1,4 @@
-import Subscription from "../../models/subscription.model";
+import {Subscription} from "../../models/subscription.model";
 import sequelize from "../../config/sequelize";
 import { CreateSubscriptionDTO } from "../../types/subscription.dto";
 import { Transaction } from "sequelize";
@@ -51,7 +51,7 @@ class SubscriptionService {
      * @param id Subscription ID
      */
     public async getSubscriptionById(id: string): Promise<Subscription | null> {
-        return await Subscription.findOne({ where: { id } }) || null;
+        return await Subscription.findByPk(id);
     }
 
     /**

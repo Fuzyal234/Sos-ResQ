@@ -1,12 +1,13 @@
 import { createUser } from "../auth.service";
 import { CreateUserDTO } from "../../types/user";
-import User from "../../models/user";
-import Agent from "../../models/agent.model";
+// import User from "../../models/user";
+// import Agent from "../../models/agent.model";
+import {User, Agent} from "../../models/index";
 import sequelize from "../../config/sequelize";
 import { hashPassword } from "../../utils/hash";
 import { CreateAgentDTO } from "../../types/agent.dto";
 
-export const createAgent = async (data: CreateUserDTO): Promise<User> => {
+export const createAgent = async (data: CreateUserDTO): Promise<Agent> => {
     const transaction = await sequelize.transaction();
     const hashedPassword = await hashPassword(data.password);
 
@@ -21,7 +22,7 @@ export const createAgent = async (data: CreateUserDTO): Promise<User> => {
         );
         delete newUser.dataValues.password;
 
-        await Agent.create(
+        const newAgent = await Agent.create(
             {
                 user_id: newUser.dataValues.id,
                 status: "available",
@@ -31,7 +32,7 @@ export const createAgent = async (data: CreateUserDTO): Promise<User> => {
 
         await transaction.commit();
 
-        return newUser;
+        return newAgent;
     } catch (error) {
         await transaction.rollback();
         throw error;

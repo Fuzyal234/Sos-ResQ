@@ -1,16 +1,16 @@
-import { QueryInterface, DataTypes, Sequelize } from "sequelize";
+'use strict';
 
-export default  {
-  up: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('agents', {
       id: {
-        type: DataTypes.UUID,
+        type: Sequelize.UUID,
         primaryKey: true,
         defaultValue: Sequelize.fn('gen_random_uuid'),
         allowNull: false,
       },
       user_id: {
-        type: DataTypes.UUID,
+        type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: 'users',
@@ -20,23 +20,23 @@ export default  {
         onDelete: 'CASCADE',
       },
       status: {
-        type: DataTypes.ENUM('available', 'busy', 'offline'),
+        type: Sequelize.ENUM('available', 'busy', 'offline'),
         allowNull: false,
       },
       created_at: {
-        type: DataTypes.DATE,
+        type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('NOW()'),
       },
       updated_at: {
-        type: DataTypes.DATE,
+        type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('NOW()'),
       },
     });
   },
 
-  down: async (queryInterface: QueryInterface, Sequelize: Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('agents');
-  }
+  },
 };

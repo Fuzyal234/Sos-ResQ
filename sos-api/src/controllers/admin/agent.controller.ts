@@ -6,6 +6,7 @@ import { CreateUserDTO } from "../../types/user";
 import User from "../../models/user";
 import { createUser } from '../../services/auth.service';
 import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
+import { validate as isUUID } from "uuid";
 
 export const index = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -45,6 +46,9 @@ export const update = async (request: FastifyRequest, reply: FastifyReply) => {
 export const show = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const id = (request.params as { id: string }).id;
+        if (!isUUID(id)) {
+            return reply.status(400).send(errorResponse("Invalid UUID format.", 400));
+        }
         const agent = await getAgentById(id);
         if (!agent) {
             return reply.status(404).send(errorResponse("Agent not found.", 404));

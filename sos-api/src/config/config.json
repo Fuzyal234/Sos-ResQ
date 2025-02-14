@@ -5,6 +5,7 @@
     "database": "api",
     "host": "sos-db", 
     "dialect": "postgres",
-    "port": 5432         
+    "port": 5432,
+    "seedersPath": "src/seeders"   
   }
 }

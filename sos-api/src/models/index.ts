@@ -11,6 +11,7 @@ import session from "./session";
 
 
 User.hasOne(SosUser, { foreignKey: "user_id" });
+SosUser.belongsTo(User, { foreignKey: "user_id" });
 Agent.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasOne(Agent, { foreignKey: "user_id" });
 SosUserSubscription.belongsTo(SosUser, { as: "sos_user", foreignKey: "sos_user_id" });

@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
-import User from "../models/user";
+import User from "./user.model";
 
 class Agent extends Model {
     public id!: string;

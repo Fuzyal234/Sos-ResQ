@@ -1,4 +1,4 @@
-import { createUser } from "../auth.service";
+import { createUser } from "../user/auth.service";
 import { CreateUserDTO } from "../../types/user";
 // import User from "../../models/user";
 // import Agent from "../../models/agent.model";

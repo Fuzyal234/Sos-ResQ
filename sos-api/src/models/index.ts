@@ -1,4 +1,4 @@
-import User from "./user";
+import User from "./user.model";
 import SosUser from "./sos_user.model";
 import { Subscription } from "./subscription.model";
 import SosUserSubscription from "./sos_user_subscription.model";

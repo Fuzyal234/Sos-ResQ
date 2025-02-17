@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import { Configuration, CountryCode, PlaidApi, PlaidEnvironments, Products } from 'plaid';
 import sequelizeInit from './config/sequelize';
-import authRoute from './routes/user/auth';
+import authRoute from './routes/user/auth.routes';
 import adminAuthRoutes from './routes/admin/auth.routes';
 import adminRoutes from './routes/admin/admin.routes';
 import agentsAuthRoutes from './routes/agent/auth.route';

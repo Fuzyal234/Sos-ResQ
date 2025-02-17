@@ -6,7 +6,7 @@ import {
 
 import { loginAdmin } from "../../controllers/admin/auth.controller";
 import { userValidationSchemas } from "../../validation/user";
-import User from "../../models/user";
+import User from "../../models/user.model";
 import { authMiddleware } from "../../middlewares/auth";
 import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema  from "joi-to-json";

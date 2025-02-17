@@ -1,12 +1,12 @@
 import { ValidationErrorItem } from "joi";
 
-export const successResponse = (message: string, results: any, statusCode: number) => {
+export const successResponse = (message: string, data: any, statusCode: number) => {
     return {
         status: "success",
         message,
         error: false,
         code: statusCode,
-        results,
+        data,
     };
 };
 

@@ -24,15 +24,15 @@ const user = User.init(
     },
     first_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     last_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     date_of_birth: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
+      allowNull: true,
     },
     phone_number: {
       type: DataTypes.STRING,

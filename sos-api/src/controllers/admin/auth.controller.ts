@@ -3,7 +3,7 @@ import { successResponse, errorResponse } from '../../helper/responses';
 import { session } from "../../models/session";
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-import User from '../../models/user';
+import User from '../../models/user.model';
 
 export const loginAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
     const { email, password } = request.body as { email: string; password: string };

@@ -1,5 +1,5 @@
 
-import User from '../../models/user';
+import User from '../../models/user.model';
 import { hashPassword } from '../../utils/hash';
 import { CreateUserDTO } from '../../types/user';
 

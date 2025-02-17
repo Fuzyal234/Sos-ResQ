@@ -8,6 +8,7 @@ import { otpStore, sendEmail } from '../../middlewares/email';
 import { createUser, createSosUser } from '../../services/auth.service';
 import argon2 from 'argon2';
 import { CreateSosUserDTO, CreateUserDTO } from '../../types/user';
+import { SosUser } from '../../models';
 export interface LoginRequestBody {
   email: string;
   password: string;
@@ -49,8 +50,13 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
       return reply.status(400).send(errorResponse("Invalid password", 400));
     }
 
+    const sos_user = await SosUser.findOne({ where: { user_id: user.dataValues.id } });
+    if (!sos_user) {
+      return reply.status(404).send(errorResponse("SOS User not found", 404));
+    }
+
     const token = jwt.sign(
-      { user_id: user.dataValues.id, role: user.dataValues.role },
+      { user_id: sos_user.dataValues.id, role: user.dataValues.role },
       process.env.JWT_SECRET || "devflovvdevflovvdevflovv", 
       { expiresIn: "1h" }
     );

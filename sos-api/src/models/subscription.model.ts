@@ -28,8 +28,8 @@ const subscription = Subscription.init(
       allowNull: false,
       unique: true,
     },
-    tier: {
-      type: DataTypes.ENUM('1', '2', '3', '4', '5'),
+    members_count: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     includes_house: {

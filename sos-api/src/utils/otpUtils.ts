@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 
 
-const GMAIL_FROM = process.env.GMAIL_FROM || "sabahatlaitf126@gmail.com";
-const GMAIL_PASS = process.env.GMAIL_PASS ||"dwuw iqiw fqhk gzwh";
+const GMAIL_FROM = process.env.GMAIL_FROM || "haydaralidev@gmail.com";
+const GMAIL_PASS = process.env.GMAIL_PASS ||"ejbn kveu xzto wtrv";
 
 if (!GMAIL_FROM || !GMAIL_PASS) {
   console.error('GMAIL_FROM or GMAIL_PASS not set in environment variables');

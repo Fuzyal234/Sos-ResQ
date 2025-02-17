@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../../models/user.model';
 import { session } from "../../models/session";
 import { successResponse, errorResponse } from '../../helper/responses';
-import { generateOTP } from '../../utils/otpUtils';
+import { generateOTP, sendOTPEmail } from '../../utils/otpUtils';
 import { otpStore, sendEmail } from '../../middlewares/email';
 import { createUser, createUserAccountService } from '../../services/user/auth.service';
 import argon2 from 'argon2';
@@ -128,7 +128,37 @@ export const sendOtp = async (request: FastifyRequest, reply: FastifyReply) => {
   }
 };
 
+export const forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
 
+  try {
+    const { email } = request.body as { email: string; };
+
+    if (!email) {
+      return reply.status(400).send(errorResponse("Email is required.", 400));
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return reply.status(404).send(errorResponse("User not found", 404));
+    }
+
+    const otp = await generateOTP();
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+
+    otpStore[email] = { otp, expiresAt }; 
+
+    await sendOTPEmail(email, otp);
+
+    return reply
+      .status(200)
+      .send(successResponse("OTP sent successfully. Please verify.", null, 200));
+  } catch (err) {
+    console.error("Error during password reset:", err);
+    return reply.status(500).send(errorResponse("Internal server error", 500));
+  }
+}
+
+const verifiedUsers = new Map<string, boolean>();
 
 export const verifyOtp = async (request: FastifyRequest, reply: FastifyReply) => {
 
@@ -160,6 +190,8 @@ export const verifyOtp = async (request: FastifyRequest, reply: FastifyReply) =>
     }
 
     delete otpStore[email];
+    verifiedUsers.set(email, true);
+
     return reply
       .status(200)
       .send(successResponse("OTP verified successfully. Login successful.", {}, 200));
@@ -168,6 +200,36 @@ export const verifyOtp = async (request: FastifyRequest, reply: FastifyReply) =>
     return reply.status(500).send(errorResponse("Internal server error", 500));
   }
 };
+
+export const resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+
+  try {
+    const { email, password } = request.body as { email: string; password: string };
+
+    if (!email || !password) {
+      return reply.status(400).send(errorResponse("Email and password are required.", 400));
+    }
+    if (!verifiedUsers.get(email)) {
+      return reply.status(403).send(errorResponse("Email is not verified. Verify OTP first.", 403));
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return reply.status(404).send(errorResponse("User not found", 404));
+    }
+
+    const hashedPassword = await argon2.hash(password);
+
+    await User.update({ password: hashedPassword }, { where: { email } });
+
+    return reply
+      .status(200)
+      .send(successResponse("Password reset successful.", null, 200));
+  } catch (err) {
+    console.error("Error during password reset:", err);
+    return reply.status(500).send(errorResponse("Internal server error", 500));
+  }
+}
 
 
 

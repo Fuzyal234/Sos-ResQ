@@ -53,7 +53,7 @@ SosUserSubscription.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("active", "inactive"),
       allowNull: false,
     },
     auto_renewal: {

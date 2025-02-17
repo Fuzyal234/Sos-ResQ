@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import supertest from "supertest";
 import { successResponse, errorResponse } from "../../../helper/responses";
 import { getAllAgents, getAgentById, createAgent, updateAgent } from "../../../services/admin/agent.service";
-import adminRoutes from "../../../routes/admin/admin.route";
+import adminRoutes from "../../../routes/admin/admin.routes";
 import { CreateAgentDTO } from "../../../types/agent.dto";
 import { CreateUserDTO } from "../../../types/user";
 

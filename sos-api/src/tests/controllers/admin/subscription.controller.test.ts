@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import supertest from "supertest";
 import { successResponse, errorResponse } from "../../../helper/responses";
 import SubscriptionService from "../../../services/admin/subscription.service";
-import adminRoutes from "../../../routes/admin/admin.route";
+import adminRoutes from "../../../routes/admin/admin.routes";
 import { CreateSubscriptionDTO } from "../../../types/subscription.dto";
 
 jest.mock("../../../services/admin/subscription.service", () => ({

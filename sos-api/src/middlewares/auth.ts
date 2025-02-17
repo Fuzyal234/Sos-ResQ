@@ -31,6 +31,9 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
     if (!decoded || !decoded.user_id) {
       return reply.status(401).send(errorResponse("Invalid token payload.", 401));
     }
+    if (!decoded || !decoded.user_id || decoded.role !== "sos_user") {
+      return reply.status(401).send(errorResponse("Invalid token payload.", 401));
+    }
 
     const sessiontoken = new session(decoded.user_id, token);
     console.log("decodeid", decoded.user_id);
@@ -49,7 +52,9 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
     });
 
   
-    request.user = sessiontoken.user_id;
+    request.user = decoded.user_id;
+    console.log("sessiontoken.user_id", sessiontoken.user_id);
+    console.log("request.user", request.user);
 
   } catch (error) {
     console.error("Error in authMiddleware:", error);

@@ -4,7 +4,7 @@ import Agent from "../../models/agent.model";
 import { CreateAgentDTO } from "../../types/agent.dto";
 import { CreateUserDTO } from "../../types/user";
 import {Subscription} from "../../models/subscription.model";
-import { createUser } from '../../services/auth.service';
+import { createUser } from '../../services/user/auth.service';
 import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
 import SubscriptionService  from "../../services/admin/subscription.service";
 import { CreateSubscriptionDTO } from "../../types/subscription.dto";

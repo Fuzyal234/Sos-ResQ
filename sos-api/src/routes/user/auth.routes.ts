@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
-  addUser,
+  createUserAccount,
   logoutUser,
   LoginRequestBody,
   sendOtp,
@@ -8,7 +8,7 @@ import {
   loginUser,
 } from "../../controllers/user/auth.controller";
 import { userValidationSchemas } from "../../validation/user";
-import User from "../../models/user";
+import User from "../../models/user.model";
 import { authMiddleware } from "../../middlewares/auth";
 import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema  from "joi-to-json";
@@ -19,7 +19,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
     method: "POST",
     url: "/signup",
     schema: { body: joiToJsonSchema(userValidationSchemas.registerUserValidation) },
-    handler: addUser,
+    handler: createUserAccount,
   });
 
   fastify.route({

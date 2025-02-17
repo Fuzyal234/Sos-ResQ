@@ -3,8 +3,8 @@ import { successResponse, errorResponse } from "../../helper/responses";
 import Agent from "../../models/agent.model";
 import { CreateAgentDTO } from "../../types/agent.dto";
 import { CreateUserDTO } from "../../types/user";
-import User from "../../models/user";
-import { createUser } from '../../services/auth.service';
+import User from "../../models/user.model";
+import { createUser } from '../../services/user/auth.service';
 import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
 import { validate as isUUID } from "uuid";
 

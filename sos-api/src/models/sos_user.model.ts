@@ -1,6 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelizeInit from "../config/sequelize";
-import User from "./user";
+import User from "./user.model";
 import { Payment } from "./payment.model";
 import SosUserSubscription from "./sos_user_subscription.model";
 

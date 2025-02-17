@@ -2,34 +2,34 @@ import Joi from 'joi';
 
 export const userValidationSchemas = {
   registerUserValidation: Joi.object({
-    address: Joi.string()
-      .required()
-      .messages({
-        "string.base": "Select address must be a string.",
-        "string.empty": "Select address cannot be empty.",
-      }),
-    first_name: Joi.string()
-      .min(2)
-      .required()
-      .messages({
-        "string.base": "First name must be a string.",
-        "string.empty": "First name cannot be empty.",
-        "string.min": "First name must be at least 2 characters long.",
-      }),
-    last_name: Joi.string()
-      .min(2)
-      .required()
-      .messages({
-        "string.base": "Last name must be a string.",
-        "string.empty": "Last name cannot be empty.",
-        "string.min": "Last name must be at least 2 characters long.",
-      }),
-    date_of_birth: Joi.date()
-      .iso()
-      .required()
-      .messages({
-        "date.base": "Date of birth must be a valid date.",
-      }),
+    // address: Joi.string()
+    //   .required()
+    //   .messages({
+    //     "string.base": "Select address must be a string.",
+    //     "string.empty": "Select address cannot be empty.",
+    //   }),
+    // full_name: Joi.string()
+    //   .min(2)
+    //   .required()
+    //   .messages({
+    //     "string.base": "Name must be a string.",
+    //     "string.empty": "Name cannot be empty.",
+    //     "string.min": "Name must be at least 2 characters long.",
+    //   }),
+    // last_name: Joi.string()
+    //   .min(2)
+    //   .required()
+    //   .messages({
+    //     "string.base": "Last name must be a string.",
+    //     "string.empty": "Last name cannot be empty.",
+    //     "string.min": "Last name must be at least 2 characters long.",
+    //   }),
+    // date_of_birth: Joi.date()
+    //   .iso()
+    //   .required()
+    //   .messages({
+    //     "date.base": "Date of birth must be a valid date.",
+    //   }),
     phone_number: Joi.string()
       .pattern(/^\+?[0-9]{10,15}$/)
       .required()

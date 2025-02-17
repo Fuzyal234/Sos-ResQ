@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
-import User from './user';
+import User from './user.model';
 import { v4 as uuidv4 } from 'uuid';
 import { UUID } from 'crypto';
 

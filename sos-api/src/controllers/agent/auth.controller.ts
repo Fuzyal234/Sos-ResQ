@@ -4,6 +4,7 @@ import { session } from "../../models/session";
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import User from '../../models/user.model';
+import { Agent } from '../../models';
 
 export const loginAgent = async (request: FastifyRequest, reply: FastifyReply) => {
     const { email, password } = request.body as { email: string; password: string };
@@ -22,11 +23,15 @@ export const loginAgent = async (request: FastifyRequest, reply: FastifyReply) =
       if (!isPasswordValid) {
         return reply.status(400).send(errorResponse("Invalid password", 400));
       }
+      const agent = await Agent.findOne({ where: { user_id: user.dataValues.id } });
+      if (!agent) {
+        return reply.status(404).send(errorResponse("Agent not found", 404));
+      }
   
       const token = jwt.sign(
-        { user_id: user.dataValues.id, role: user.dataValues.role },
+        { user_id: user.dataValues.id, role: user.dataValues.role , agent_id: agent.dataValues.id},
         process.env.JWT_SECRET || "devflovvdevflovvdevflovv", 
-        { expiresIn: "1h" }
+        { expiresIn: "4h" }
       );
   
       const existingSession = await session.findOne({ where: { user_id: user.dataValues.id } });

@@ -62,7 +62,7 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     const token = jwt.sign(
       { user_id: sos_user.dataValues.id, role: user.dataValues.role },
       process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
 
     const existingSession = await session.findOne({ where: { user_id: user.dataValues.id } });

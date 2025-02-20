@@ -1,9 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelizeInit from '../config/sequelize';
-import User from './user.model';
 import { v4 as uuidv4 } from 'uuid';
 
-
+import sequelizeInit from '../config/sequelize';
 export class session extends Model {
 
   declare id: string;
@@ -42,6 +40,5 @@ session.init(
     underscored: true,
   }
 );
-
 
 export default session;

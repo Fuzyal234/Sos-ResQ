@@ -1,7 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
-import User from "./user.model";
 
 class Agent extends Model {
     public id!: string;
@@ -27,8 +26,9 @@ Agent.init(
             onDelete: 'CASCADE',
         },
         status: {
-            type: DataTypes.ENUM('available', 'busy', 'offline'),
+            type: DataTypes.ENUM('online','available', 'busy', 'offline'),
             allowNull: false,
+            defaultValue: 'offline',
         },
     },
     {

@@ -13,6 +13,7 @@ services:
       - sos-db
     depends_on:
       - sos-db
+      - redis
     restart: unless-stopped
     environment:
       DATABASE_USER: ${DATABASE_USER}
@@ -23,13 +24,26 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: ${NODE_ENV}
       API_PORT: ${API_PORT}
+      REDIS_HOST: 'redis'
+      REDIS_PORT: ${REDIS_PORT}
     volumes:
         - ../sos-api/:/sos-api
         - ../sos-api/config:/sos-api/config
         - /Users/Fuzail/Documents/Node-Typescript-Postgres/sos-api/node_modules
+  
+ redis:
+    image: redis
+    container_name: sos-redis
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT} - "6379:6379"
+    networks:
+      - sos-api
+    volumes:
+      - ./data-redis:/data
 
 networks:
  sos-api:
     driver: bridge
 
-
+volumes:
+  data-redis:

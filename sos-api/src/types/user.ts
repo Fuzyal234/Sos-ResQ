@@ -1,3 +1,6 @@
+import { OAuth2Namespace } from "@fastify/oauth2";
+import { OAuth2 } from "nodemailer/lib/smtp-connection";
+
 interface CreateUserDTO {
   email: string;
   password: string;
@@ -30,6 +33,7 @@ interface CreateSosUserDTO {
   gender: Gender;
   date_of_birth: Date
   address: string;
+  avatar_url: Buffer;
 }
 interface CreateContactDTO {
   name: string
@@ -37,13 +41,15 @@ interface CreateContactDTO {
   relation: Relation
 }
 
-interface SosUserResponseDTO {
+interface SosUserDTO {
   id: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  date_of_birth: Date;
+  gender: Gender;
   phone_number: string;
   address: string;
+  avatar_url: string;
 }
 
 interface UserAccountReturnDTO {
@@ -51,11 +57,15 @@ interface UserAccountReturnDTO {
   phone_number: string
 }
 
+interface FastifyInstance {
+  googleOauth2: OAuth2Namespace
+}
 export {
   CreateUserDTO,
   CreateSosUserDTO,
-  SosUserResponseDTO,
+  SosUserDTO,
   CreateContactDTO,
   CreateUserAccountDTO,
-  UserAccountReturnDTO
+  UserAccountReturnDTO,
+  FastifyInstance
 };

@@ -7,9 +7,12 @@ import agentsAuthRoutes from './routes/agent/auth.routes';
 import userRoutes from './routes/user/user.routes';
 import websocket from '@fastify/websocket';
 import agentRoutes from './routes/agent/agent.routes';
+import googleAuthRoute from './routes/googleAuth';
+import fastifyMultipart from "@fastify/multipart";
 
 const fastify = Fastify({ logger: true });
 
+fastify.register(fastifyMultipart)
 fastify.register(websocket, {
   options: {  
     maxPayload: 1048576,
@@ -24,6 +27,7 @@ fastify.register(adminRoutes);
 fastify.register(agentsAuthRoutes);
 fastify.register(userRoutes);
 fastify.register(agentRoutes);
+// fastify.register(googleAuthRoute)
 
 // Start Server
 const startServer = async () => {

@@ -9,6 +9,14 @@ import { createUser, createUserAccountService } from '../../services/user/auth.s
 import argon2 from 'argon2';
 import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, UserAccountReturnDTO } from '../../types/user';
 import { SosUser } from '../../models';
+const { OAuth2Client } = require('google-auth-library');
+
+const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 export interface LoginRequestBody {
   email: string;
   password: string;
@@ -145,7 +153,7 @@ export const forgotPassword = async (request: FastifyRequest, reply: FastifyRepl
     const otp = await generateOTP();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
-    otpStore[email] = { otp, expiresAt }; 
+    otpStore[email] = { otp, expiresAt };
 
     await sendOTPEmail(email, otp);
 
@@ -231,8 +239,56 @@ export const resetPassword = async (request: FastifyRequest, reply: FastifyReply
   }
 }
 
+export async function googleAuthCallback(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    // const { code } = request.query as { code: string };
 
+    // if (!code) {
+    //   return reply.status(400).send(errorResponse("Code is required", 400));
+    // }
 
+    // const { tokens } = await oauth2Client.getToken(code);
+
+    const { token } = request.body;
+    console.log("token", token);
+
+    if (!token) {
+      return reply.status(400).send(errorResponse("Invalid code", 400));
+    }
+
+    const ticket = await oauth2Client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    console.log("ticket", ticket);
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const fullName = payload.name;
+    const firstName = fullName.split(" ")[0];
+    const lastName = fullName.split(" ")[1];
+    
+    if (!ticket) {
+      return reply.status(400).send(errorResponse("Invalid email", 400));
+    }
+
+    const user = await User.findOne({ where: { ticket } });
+
+    if (!user) {
+      return reply.status(404).send(errorResponse("User not found", 404));
+    }
+
+    // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    //   expiresIn: "1d",
+    // });
+
+    return reply.status(200).send({
+      token,
+    });
+  } catch (err) {
+    console.error("Error during Google authentication:", err);
+    return reply.status(500).send(errorResponse("Internal server error", 500));
+  }
+}
 
 export async function logoutUser(token: string): Promise<{ success: boolean; error?: string }> {
   try {

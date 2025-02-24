@@ -8,6 +8,7 @@ class User extends Model {
   public date_of_birth!: Date;
   public phone_number!: string;
   public email!: string;
+  public gender!: string;
   public role!: string;
   public password!: string;
 
@@ -53,6 +54,10 @@ const user = User.init(
           msg: "Invalid email format.",
         },
       },
+    },
+    gender: {
+      type: DataTypes.ENUM("male", "female", "other"),
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING,

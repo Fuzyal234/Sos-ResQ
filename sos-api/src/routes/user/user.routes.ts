@@ -7,6 +7,7 @@ import { Agent } from "../../models";
 
 import subscriptionController from "../../controllers/user/subscription.controller";
 import redisService from "../../services/redis.service";
+import profileController from "../../controllers/user/profile.controller";
 
 export default async function userRoutes(fastify: FastifyInstance) {
 
@@ -15,6 +16,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
     fastify.route({ method: "POST", url: "/user/requests", preHandler: authMiddleware, handler: requestController.createRequest, });
     fastify.route({ method: "GET", url: "/user/requests", preHandler: authMiddleware, handler: requestController.getQueuedJobs, });
+
+    fastify.route({ method: "GET", url: "/user/profile", preHandler: authMiddleware, handler: profileController.getProfile, });
+    fastify.route({ method: "PUT", url: "/user/profile", preHandler: authMiddleware, handler: profileController.updateProfile, });
 
     fastify.get('/ws/user/chat', { websocket: true, preHandler: authMiddleware }, (connection, req) => {
         const userId = req.user as UUID;

@@ -8,6 +8,7 @@ class SosUser extends Model {
   public id!: string;
   public user_id!: string;
   public address!: string;
+  public avatar_url!: string;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -32,6 +33,10 @@ SosUser.init(
       onDelete: "CASCADE",
     },
     address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    avatar_url: {
       type: DataTypes.STRING,
       allowNull: true,
     },

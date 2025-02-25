@@ -2,12 +2,13 @@ import { Model, DataTypes } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import sequelizeInit from '../config/sequelize';
+import { UUID } from 'crypto';
 export class session extends Model {
 
   declare id: string;
   declare user_id: number;
   declare token: string;
-  static user_id: any;
+  static user_id: UUID;
 }
 
 session.init(

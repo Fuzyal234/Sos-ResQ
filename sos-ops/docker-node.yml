@@ -35,7 +35,7 @@ services:
     image: redis
     container_name: sos-redis
     ports:
-      - ${REDIS_PORT}:${REDIS_PORT} - "6379:6379"
+      - ${REDIS_PORT}:${REDIS_PORT}
     networks:
       - sos-api
     volumes:

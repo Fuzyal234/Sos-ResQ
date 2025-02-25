@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
-import User from '../../models/user.model';
+import { SosUser, User } from '../../models/index';
 import { session } from "../../models/session";
 import { successResponse, errorResponse } from '../../helper/responses';
 import { generateOTP, sendOTPEmail } from '../../utils/otpUtils';
@@ -8,7 +8,6 @@ import { otpStore, sendEmail } from '../../middlewares/email';
 import { createUser, createUserAccountService } from '../../services/user/auth.service';
 import argon2 from 'argon2';
 import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, UserAccountReturnDTO } from '../../types/user';
-import { SosUser } from '../../models';
 const { OAuth2Client } = require('google-auth-library');
 
 const oauth2Client = new OAuth2Client(
@@ -34,13 +33,36 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
       return reply.status(400).send(errorResponse("User with this email already exists.", 400));
     }
     const newSosUser = await createUserAccountService(userData);
-    const SosUser: UserAccountReturnDTO = {
-      email: newSosUser.dataValues.email,
-      phone_number: newSosUser.dataValues.phone_number
-    };
-    return reply
-      .status(201)
-      .send(successResponse("Your account has been created successfully!", SosUser, 201));
+    if (newSosUser) {
+      const token = jwt.sign(
+        { user_id: newSosUser.id, role: "sos_user" },
+        process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
+        { expiresIn: "24h" }
+      );
+      
+      const existingSession = await session.findOne({ where: { user_id: newSosUser.user_id } });
+      if (existingSession) {
+        await session.update(
+          { token },
+          { where: { user_id: newSosUser.id } }
+        );
+      } else {
+        const user = await SosUser.findByPk(newSosUser.id);
+        const newSession = await session.create({ user_id: newSosUser.user_id, token });
+        console.log('newSession :>> ', newSession);
+      }
+      const userProfile = {
+        user_id: newSosUser.id,
+        email: newSosUser.email,
+        first_name: newSosUser.first_name,
+        last_name: newSosUser.last_name,
+        date_of_birth: newSosUser.date_of_birth,
+        phone_number: newSosUser.phone_number,
+      };
+      return reply
+        .status(201)
+        .send(successResponse("Your account has been created successfully!", { token, user : userProfile }, 201));
+    }
   } catch (error) {
     console.error("Error during signup:", error);
     return reply
@@ -89,12 +111,13 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     } else {
       await session.create({ user_id: user.dataValues.id, token });
     }
+    // Stoped for now
 
-    const otpResponse = await sendOtp(request, reply);
+    // const otpResponse = await sendOtp(request, reply);
 
-    if (otpResponse.statusCode !== 200) {
-      return otpResponse;
-    }
+    // if (otpResponse.statusCode !== 200) {
+    //   return otpResponse;
+    // }
 
     const userProfile = {
       user_id: user.dataValues.id,
@@ -272,7 +295,7 @@ export async function googleAuthCallback(request: FastifyRequest, reply: Fastify
     const fullName = payload.name;
     const firstName = fullName.split(" ")[0];
     const lastName = fullName.split(" ")[1];
-    
+
     if (!ticket) {
       return reply.status(400).send(errorResponse("Invalid email", 400));
     }

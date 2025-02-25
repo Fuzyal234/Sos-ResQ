@@ -31,7 +31,7 @@ const createUser = async (data: CreateUserDTO): Promise<User> => {
   }
 };
 
-const createUserAccountService = async (data: CreateUserAccountDTO): Promise<User> => {
+const createUserAccountService = async (data: CreateUserAccountDTO): Promise<SosUserDTO> => {
   const transaction = await sequelize.transaction();
   const hashedPassword = await hashPassword(data.password);
   try {
@@ -49,7 +49,19 @@ const createUserAccountService = async (data: CreateUserAccountDTO): Promise<Use
     }, { transaction });
     await transaction.commit();
 
-    return newUser;
+    const sosUser: SosUserDTO = {
+      id: newSosUser.dataValues.id,
+      user_id : newUser.dataValues.id,
+      email: newUser.dataValues.email,
+      address: newSosUser.dataValues.address,
+      avatar_url: newSosUser.dataValues.avatar_url,
+      date_of_birth: newSosUser.dataValues.date_of_birth,
+      first_name: newUser.dataValues.first_name,
+      gender: newSosUser.dataValues.gender,
+      last_name: newUser.dataValues.last_name,
+      phone_number: newUser.dataValues.phone_number,
+    }
+    return sosUser;
   } catch (error) {
     await transaction.rollback();
     throw error;

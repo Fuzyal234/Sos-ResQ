@@ -12,7 +12,11 @@ import fastifyMultipart from "@fastify/multipart";
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(fastifyMultipart)
+fastify.register(fastifyMultipart,{
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+},
+})
 fastify.register(websocket, {
   options: {  
     maxPayload: 1048576,

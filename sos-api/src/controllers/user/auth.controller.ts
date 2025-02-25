@@ -27,6 +27,12 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
 
   try {
     const userData = request.body as CreateUserAccountDTO;
+    userData.email = userData.email.toLowerCase();
+
+    const existingUser = await User.findOne({ where: { email: userData.email } });
+    if (existingUser) {
+      return reply.status(400).send(errorResponse("User with this email already exists.", 400));
+    }
     const newSosUser = await createUserAccountService(userData);
     const SosUser: UserAccountReturnDTO = {
       email: newSosUser.dataValues.email,

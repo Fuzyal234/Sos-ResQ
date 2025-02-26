@@ -23,7 +23,7 @@ module.exports = {
       },
       phone_number: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         validate: {
           is: /^[+]?[0-9]{10,15}$/,
         },

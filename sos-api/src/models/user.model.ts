@@ -37,7 +37,7 @@ const user = User.init(
     },
     phone_number: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       validate: {
         is: {
           args: /^[+]?[0-9]{10,15}$/,
@@ -84,4 +84,4 @@ const user = User.init(
   }
 );
 
-export default User;
+export default user;

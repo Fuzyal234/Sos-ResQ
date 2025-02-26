@@ -8,6 +8,10 @@ import { otpStore, sendEmail } from '../../middlewares/email';
 import { createUser, createUserAccountService } from '../../services/user/auth.service';
 import argon2 from 'argon2';
 import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, UserAccountReturnDTO } from '../../types/user';
+import utilityService from '../../services/utility.service';
+import { UUID } from 'crypto';
+import sessionService from '../../services/session.service';
+import userAuthService from '../../services/user/auth.service';
 const { OAuth2Client } = require('google-auth-library');
 
 const oauth2Client = new OAuth2Client(
@@ -39,7 +43,7 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
         process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
         { expiresIn: "24h" }
       );
-      
+
       const existingSession = await session.findOne({ where: { user_id: newSosUser.user_id } });
       if (existingSession) {
         await session.update(
@@ -62,7 +66,7 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
       };
       return reply
         .status(201)
-        .send(successResponse("Your account has been created successfully!", { token, user : userProfile }, 201));
+        .send(successResponse("Your account has been created successfully!", { token, user: userProfile }, 201));
     }
   } catch (error) {
     console.error("Error during signup:", error);
@@ -272,55 +276,33 @@ export const resetPassword = async (request: FastifyRequest, reply: FastifyReply
 
 export async function googleAuthCallback(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // const { code } = request.query as { code: string };
-
-    // if (!code) {
-    //   return reply.status(400).send(errorResponse("Code is required", 400));
-    // }
-
-    // const { tokens } = await oauth2Client.getToken(code);
-
-    const { token } = request.body;
-    console.log("token", token);
-
-    if (!token) {
+    const { google_auth_token } = request.body as { google_auth_token: string };
+    if (!google_auth_token) {
       return reply.status(400).send(errorResponse("Invalid code", 400));
     }
 
-    const ticket = await oauth2Client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    console.log("ticket", ticket);
-    const payload = ticket.getPayload();
-    const email = payload.email;
-    const fullName = payload.name;
-    const firstName = fullName.split(" ")[0];
-    const lastName = fullName.split(" ")[1];
-
-    if (!ticket) {
+    const payload = await utilityService.verifyGoogleToken(google_auth_token);
+    if (!payload) {
       return reply.status(400).send(errorResponse("Invalid email", 400));
     }
 
-    const user = await User.findOne({ where: { ticket } });
+    const { email, sub: google_user_id } = payload;
+    let user = await User.findOne({ where: { email } });
 
-    if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+    if (user) {
+      user = await userAuthService.getSosUserDTO(user);
     }
 
-    // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    //   expiresIn: "1d",
-    // });
-
-    return reply.status(200).send({
-      token,
-    });
+    if (!user) {
+      user = await userAuthService.createUserFromGoogle(payload, google_user_id);
+    }
+    console.log('user ___:>> ', user);
+    return await userAuthService.handleUserLogin(user, reply);
   } catch (err) {
     console.error("Error during Google authentication:", err);
     return reply.status(500).send(errorResponse("Internal server error", 500));
   }
 }
-
 export async function logoutUser(token: string): Promise<{ success: boolean; error?: string }> {
   try {
     console.log("Received token:", token);

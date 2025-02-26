@@ -25,7 +25,6 @@ enum Relation {
 }
 interface CreateUserAccountDTO {
   email: string
-  phone_number: string
   password: string
 }
 interface CreateSosUserDTO {

@@ -3,10 +3,7 @@ import { User } from "../../models";
 import { successResponse, errorResponse } from "../../helper/responses";
 import sosUserService from "../../services/user/sosUser.service";
 import { CreateSosUserDTO, SosUserDTO } from "../../types/user";
-import { S3ServiceException } from "@aws-sdk/client-s3";
 import s3Service from "../../services/s3.service";
-import { valid } from "joi";
-import { MultipartFile } from "@fastify/multipart";
 
 
 
@@ -42,7 +39,6 @@ class ProfileController {
             
             const fields = await data.fields;
 
-            // Extracting fields from form-data
             const {
                 full_name,
                 date_of_birth,
@@ -95,7 +91,8 @@ class ProfileController {
                 address: address.value,
                 date_of_birth: date_of_birth.value,
                 avatar_url,
-                phone_number: userProfile.phone_number
+                phone_number: userProfile.phone_number,
+                is_profile_completed: true
             });
 
             return reply.status(200).send(successResponse("User profile updated successfully!", updatedProfile, 200));

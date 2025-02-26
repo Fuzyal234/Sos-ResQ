@@ -9,6 +9,7 @@ class SosUser extends Model {
   public user_id!: string;
   public address!: string;
   public avatar_url!: string;
+  public is_profile_completed!: boolean;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -39,6 +40,11 @@ SosUser.init(
     avatar_url: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    is_profile_completed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {

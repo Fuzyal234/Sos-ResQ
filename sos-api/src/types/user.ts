@@ -52,6 +52,7 @@ interface SosUserDTO {
   phone_number: string;
   address: string;
   avatar_url: string;
+  is_profile_completed: boolean
 }
 
 interface UserAccountReturnDTO {

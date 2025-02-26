@@ -58,6 +58,7 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
         last_name: newSosUser.last_name,
         date_of_birth: newSosUser.date_of_birth,
         phone_number: newSosUser.phone_number,
+        is_profile_completed: newSosUser.is_profile_completed
       };
       return reply
         .status(201)
@@ -126,11 +127,12 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
       last_name: user.dataValues.last_name,
       date_of_birth: user.dataValues.date_of_birth,
       phone_number: user.dataValues.phone_number,
+      is_profile_completed: sos_user.dataValues.is_profile_completed
     };
-
+    console.log('userProfile :>> ', userProfile);
     return reply
       .status(200)
-      .send(successResponse("Login successful and OTP sent", { token, user: userProfile }, 200));
+      .send(successResponse("Login successful", { token, user: userProfile }, 200));
 
   } catch (err) {
     console.error("Error during login:", err);

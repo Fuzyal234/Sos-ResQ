@@ -9,8 +9,17 @@ import websocket from '@fastify/websocket';
 import agentRoutes from './routes/agent/agent.routes';
 import googleAuthRoute from './routes/googleAuth';
 import fastifyMultipart from "@fastify/multipart";
+import ajvErrors from 'ajv-errors';
 
-const fastify = Fastify({ logger: true });
+
+const fastify = Fastify({
+  ajv: {
+    customOptions: {
+      allErrors: true,
+    },
+    plugins: [ajvErrors],
+  },
+  logger: true });
 
 fastify.register(fastifyMultipart,{
   limits: {

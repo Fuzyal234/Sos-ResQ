@@ -26,7 +26,25 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({ method: "POST", url: "/user/forgot-password", handler: forgotPassword, });
   fastify.route({ method: "POST", url: "/user/reset-password", handler: resetPassword, });
 
-  fastify.route({ method: "POST", url: "/google-auth", handler: googleAuthCallback });
+  fastify.route({ method: "POST", url: "/google-auth", schema: { body: 
+    {
+      type: "object",
+      required: ["google_auth_token"],
+      properties: {
+        token: { type: "string" }
+      },
+      errorMessage: {
+        type: "The request body must be an object.",
+        required: {
+            token: "The 'google_auth_token' field is required."
+        },
+        properties: {
+            token: "The 'google_auth_token' field must be a string."
+        }
+    }
+
+    }
+   }, handler: googleAuthCallback });
 
   
   fastify.route({

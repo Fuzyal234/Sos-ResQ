@@ -79,7 +79,7 @@ class SubscriptionService {
         }));
     }
 
-    public async createSosUserSubscription(createSosUserSubscription: CreateSosUserSubscriptionDTO): Promise<void> {
+    public async createSosUserSubscription(createSosUserSubscription: CreateSosUserSubscriptionDTO): Promise<SosUserSubscription> {
         // const { sos_user_id: sosUserId, subscription_id: subscriptionId, auto_renewal: auto_renewal } = createSosUserSubscription;
         const sos_user_id = createSosUserSubscription.sos_user_id;
         const subscription_id = createSosUserSubscription.subscription_id;
@@ -96,7 +96,7 @@ class SubscriptionService {
         const status = "active"; //#TODO : update status based on payment status
 
 
-        await SosUserSubscription.create({
+        const sos_subscription = await SosUserSubscription.create({
             sos_user_id,
             subscription_id,
             start_date,
@@ -104,13 +104,15 @@ class SubscriptionService {
             status,
             auto_renewal,
         });
-        if(subscription.tier === "1") {
+        if(subscription.dataValues.members_count > "1") {
             ProtectedEntities.create({
                 entity_id: sos_user_id,
                 entity_type: "sos_user",
                 sos_user_subscription_id: subscription.id,
             });
         }
+
+        return sos_subscription;
     }
 }
 

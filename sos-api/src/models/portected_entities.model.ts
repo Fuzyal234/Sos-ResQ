@@ -25,7 +25,7 @@ ProtectedEntities.init(
       allowNull: false,
     },
     entity_type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('car', 'house', 'sos_user'),
       allowNull: false,
     },
     sos_user_subscription_id: {

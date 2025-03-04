@@ -10,6 +10,9 @@ class Subscription extends Model {
   public includes_house!: boolean;
   public includes_car!: boolean;
   public price!: number;
+  public description!: string;
+  public stripe_product_id!: string;
+  public stripe_price_id!: string;
   
 
   public readonly created_at!: Date;
@@ -42,6 +45,18 @@ const subscription = Subscription.init(
     },
     price: {
       type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    stripe_product_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    stripe_price_id: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },

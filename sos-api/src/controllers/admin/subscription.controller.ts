@@ -3,12 +3,13 @@ import { successResponse, errorResponse } from "../../helper/responses";
 import Agent from "../../models/agent.model";
 import { CreateAgentDTO } from "../../types/agent.dto";
 import { CreateUserDTO } from "../../types/user";
-import {Subscription} from "../../models/subscription.model";
+import { Subscription } from "../../models/subscription.model";
 import { createUser } from '../../services/user/auth.service';
 import { createAgent, getAgentById, getAllAgents, updateAgent } from "../../services/admin/agent.service";
-import SubscriptionService  from "../../services/admin/subscription.service";
+import SubscriptionService from "../../services/admin/subscription.service";
 import { CreateSubscriptionDTO } from "../../types/subscription.dto";
 import { validate as isUUID } from "uuid";
+import stripeService from "../../services/stripe.service";
 
 class SubscriptionController {
     async index(request: FastifyRequest, reply: FastifyReply) {
@@ -25,8 +26,21 @@ class SubscriptionController {
     }
     async create(request: FastifyRequest, reply: FastifyReply) {
         try {
+
             const subscriptionData = request.body as CreateSubscriptionDTO;
+            const { product, stripePrice } = await stripeService.createProduct(
+                subscriptionData.name,
+                subscriptionData.description,
+                subscriptionData.price
+            );
+            subscriptionData.stripe_product_id = product.id
+            subscriptionData.stripe_price_id = stripePrice.id
+            console.log('product :>> ', product);
+            console.log('stripePrice :>> ', stripePrice);
+            console.log('subscriptionData :>> ', subscriptionData);
+
             const subscription = await SubscriptionService.createSubscription(subscriptionData);
+
             return reply.status(201).send(successResponse("Subscription created successfully!", subscription, 201));
         } catch (error) {
             console.error("Error creating agent:", error);
@@ -54,6 +68,17 @@ class SubscriptionController {
         try {
             const subscriptionData = request.body as CreateSubscriptionDTO;
             const id = (request.params as { id: string }).id;
+
+            const old_subscription = await SubscriptionService.getSubscriptionById(id);
+            const old_price = old_subscription?.dataValues.price;
+            const new_price = subscriptionData.price as number;
+       
+            if  (old_price !== new_price) {
+                stripeService.updateProductPrice(old_subscription?.dataValues.stripe_product_id || "", subscriptionData.price);
+            }
+            const product = await stripeService.updateProduct(old_subscription?.dataValues.stripe_product_id || "",{
+                name: subscriptionData.name,
+                description: subscriptionData.description,});
             const subscription = await SubscriptionService.updateSubscription(subscriptionData, id);
             return reply.status(200).send(successResponse("Subscription updated successfully!", subscription, 200));
         } catch (error) {

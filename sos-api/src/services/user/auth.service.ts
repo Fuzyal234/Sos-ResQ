@@ -93,7 +93,7 @@ class UserAuthService {
       date_of_birth: user.date_of_birth,
       phone_number: user.phone_number,
       avatar_url: user.avatar_url,
-      is_profile_completed: sosUser?.dataValues.is_profile_completed,
+      is_profile_completed: user.is_profile_completed,
     };
   
     console.log('userProfile :>> ', userProfile);
@@ -129,6 +129,7 @@ class UserAuthService {
   
   async getSosUserDTO(user: any) {
     const sosUser = await SosUser.findOne({ where: { user_id: user.dataValues.id } });
+    console.log('sosUser :>> ', sosUser);
     const sosUserDTO : SosUserDTO = {
       id: sosUser.dataValues.id,
       user_id : user.dataValues.id,

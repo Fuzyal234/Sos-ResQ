@@ -5,6 +5,9 @@ import SosUserSubscription from "./sos_user_subscription.model";
 import { Payment } from "./payment.model";
 import Agent from "./agent.model";
 import session from "./session";
+import Car from "./car.model";
+import House from "./house.model";
+import { ProtectedEntities } from "./portected_entities.model";
 
 
 
@@ -36,4 +39,12 @@ session.belongsTo(User, { foreignKey: 'id', as: 'user' });
 
 SosUser.prototype.toJSON = function () {const values = { ...this.get() };delete values.id;return values;};
 
-export { Agent, User, SosUser, Subscription, SosUserSubscription, Payment };
+Car.belongsTo(SosUser, { foreignKey: "sos_user_id", as: "car_sos_user" });
+SosUser.hasMany(Car, { foreignKey: "sos_user_id", as: "cars" });
+
+House.belongsTo(SosUser, { foreignKey: "sos_user_id", as: "house_sos_user" });
+SosUser.hasMany(House, { foreignKey: "sos_user_id", as: "houses" });
+
+
+
+export { Agent, User, SosUser, Subscription, SosUserSubscription, Payment, session, Car, House };

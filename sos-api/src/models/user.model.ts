@@ -56,7 +56,7 @@ const user = User.init(
       },
     },
     gender: {
-      type: DataTypes.ENUM("male", "female", "other"),
+      type: DataTypes.ENUM("male", "female", "prefer_not_to_say"),
       allowNull: true,
     },
     password: {

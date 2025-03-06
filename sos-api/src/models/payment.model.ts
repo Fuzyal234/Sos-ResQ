@@ -47,7 +47,7 @@ Payment.init(
     },
     transaction_id: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     status: {
       type: DataTypes.STRING,

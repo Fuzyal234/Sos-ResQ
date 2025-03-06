@@ -93,7 +93,7 @@ class SubscriptionService {
         const start_date = new Date();
         const end_date = new Date(start_date);
         end_date.setMonth(end_date.getMonth() + 1);
-        const status = "active"; //#TODO : update status based on payment status
+        const status = "inactive"; //#TODO : update status based on payment status
 
 
         const sos_subscription = await SosUserSubscription.create({

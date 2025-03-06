@@ -10,6 +10,7 @@ import redisService from "../../services/redis.service";
 import profileController from "../../controllers/user/profile.controller";
 import carController from "../../controllers/user/car.controller";
 import houseController from "../../controllers/user/house.controller";
+import familyController from "../../controllers/user/family.controller";
 
 export default async function userRoutes(fastify: FastifyInstance) {
 
@@ -21,6 +22,12 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
     fastify.route({ method: "GET", url: "/user/profile", preHandler: authMiddleware, handler: profileController.getProfile, });
     fastify.route({ method: "PUT", url: "/user/profile", preHandler: authMiddleware, handler: profileController.updateProfile, });
+
+    fastify.route({method: "POST", url: "/webhook", handler: subscriptionController.stripeWebhook});
+
+    fastify.route({method: "POST", url: "/user/invite", preHandler: authMiddleware, handler: familyController.inviteMember, });
+    fastify.route({method: "POST", url: "/user/accept-invite", preHandler: authMiddleware, handler: familyController.acceptInvitation, });
+    fastify.route({method: "POST", url: "/user/confirm-invite", preHandler: authMiddleware, handler: familyController.confirmInvite, });
 
     fastify.route({
         method: "POST",

@@ -18,15 +18,18 @@ class SosUserService {
         }
 
         const plainSosUser = sosUser.get({ plain: true });
-        console.log(plainSosUser);
         const sosUserDTO: SosUserDTO = {
             id: plainSosUser.id,
-            address: plainSosUser.address,
-            avatar_url: plainSosUser.avatar_url,
+            user_id: plainSosUser.user_id,
+            email: plainSosUser.user.email,
             first_name: plainSosUser.user.first_name,
             last_name: plainSosUser.user.last_name,
             date_of_birth: plainSosUser.user.date_of_birth,
-            phone_number: plainSosUser.user.phone_number
+            gender: plainSosUser.user.gender,
+            phone_number: plainSosUser.user.phone_number,
+            address: plainSosUser.address,
+            avatar_url: plainSosUser.avatar_url,
+            is_profile_completed: plainSosUser.is_profile_completed
         };
 
         return sosUserDTO;

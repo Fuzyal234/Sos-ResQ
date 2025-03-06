@@ -35,6 +35,7 @@ interface CreateSosUserDTO {
   avatar_url: Buffer;
 }
 interface CreateContactDTO {
+  sos_user_id: string
   name: string
   phone_number: string
   relation: Relation

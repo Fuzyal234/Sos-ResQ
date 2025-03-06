@@ -11,6 +11,7 @@ import profileController from "../../controllers/user/profile.controller";
 import carController from "../../controllers/user/car.controller";
 import houseController from "../../controllers/user/house.controller";
 import familyController from "../../controllers/user/family.controller";
+import contactController from "../../controllers/user/contact.controller";
 
 export default async function userRoutes(fastify: FastifyInstance) {
 
@@ -23,11 +24,47 @@ export default async function userRoutes(fastify: FastifyInstance) {
     fastify.route({ method: "GET", url: "/user/profile", preHandler: authMiddleware, handler: profileController.getProfile, });
     fastify.route({ method: "PUT", url: "/user/profile", preHandler: authMiddleware, handler: profileController.updateProfile, });
 
-    fastify.route({method: "POST", url: "/webhook", handler: subscriptionController.stripeWebhook});
+    fastify.route({ method: "POST", url: "/webhook", handler: subscriptionController.stripeWebhook });
 
-    fastify.route({method: "POST", url: "/user/invite", preHandler: authMiddleware, handler: familyController.inviteMember, });
-    fastify.route({method: "POST", url: "/user/accept-invite", preHandler: authMiddleware, handler: familyController.acceptInvitation, });
-    fastify.route({method: "POST", url: "/user/confirm-invite", preHandler: authMiddleware, handler: familyController.confirmInvite, });
+    fastify.route({ method: "POST", url: "/user/invite", preHandler: authMiddleware, handler: familyController.inviteMember, });
+    fastify.route({ method: "POST", url: "/user/accept-invite", preHandler: authMiddleware, handler: familyController.acceptInvitation, });
+    fastify.route({ method: "POST", url: "/user/confirm-invite", preHandler: authMiddleware, handler: familyController.confirmInvite, });
+
+    fastify.route({
+        method: "POST",
+        url: "/user/contact",
+        schema: {
+            body: {
+                type: "object",
+                required: ["name", "relation", "phone"],
+                properties: {
+                    name: { type: "string" },
+                    relation: { type: "string" },
+                    phone: { type: "string" }
+                }
+            }
+        }, preHandler: authMiddleware, handler: contactController.create,
+    });
+
+    fastify.route({ method: "GET", url: "/user/contacts", preHandler: authMiddleware, handler: contactController.index, });
+    fastify.route({
+        method: "PUT",
+        url: "/user/contact/:id",
+        schema: {
+            body: {
+                type: "object",
+                required: ["name", "relation", "phone"],
+                properties: {
+                    name: { type: "string" },
+                    relation: { type: "string" },
+                    phone: { type: "string" }
+                }
+            }
+        },
+        preHandler: authMiddleware,
+        handler: contactController.update,
+    });
+
 
     fastify.route({
         method: "POST",

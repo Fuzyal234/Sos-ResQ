@@ -31,56 +31,36 @@ class ProfileController {
             if (!userProfile) {
                 return reply.status(404).send(errorResponse("User not found", 404));
             }
-            
-            const data = await request.file();
-            if (!data) {
-                return reply.status(400).send(errorResponse("No file uploaded", 400));
-            }
-            
-            const fields = await data.fields;
-
-            const {
-                full_name,
-                date_of_birth,
-                address,
-                gender
-            } = fields;
-
-            if (!full_name|| !date_of_birth || !gender || !address) {
+    
+            const { full_name, date_of_birth, address, gender, avatar } = request.body;
+            if (!full_name || !date_of_birth || !gender || !address) {
                 return reply.code(400).send({ error: "Missing required fields" });
             }
+            
             if (!["male", "female", "other"].includes(gender.value)) {
                 return reply.code(400).send({ error: "Invalid gender value" });
             }
-
+    
             const date = new Date(date_of_birth.value);
-
-            if (isNaN(date.getTime())) {
-                return reply.code(400).send({ error: "Invalid date format" });
+            if (isNaN(date.getTime()) || date > new Date() || date.getFullYear() < 1900) {
+                return reply.code(400).send({ error: "Invalid date of birth" });
             }
-            if (date > new Date()) {
-                return reply.code(400).send({ error: "Date of birth cannot be in the future" });
-            }
-            if (date.getFullYear() < 1900) {
-                return reply.code(400).send({ error: "Date of birth cannot be before 1900" });
-            }
-
+    
             if (address.value.length > 100) {
                 return reply.code(400).send({ error: "Address cannot be more than 100 characters" });
             }
-            
+    
             const [first_name = "", last_name = ""] = full_name.value.split(" ");
-            
-            console.log("gone into update profile");
-            const fileBuffer = await data.toBuffer().catch((error) => {
-                console.error("Error processing file buffer:", error);
-                throw error;
-            });
-
-            const fileName = fields.avatar?.filename;
-            const randomFileName = fileName ? `${Date.now()}-${fileName}` : "";
-            const avatar_url = fileName ? await s3Service.uploadFile(fileBuffer, randomFileName) : userProfile.avatar_url;
-
+            let avatar_url = userProfile.avatar_url;
+    
+            if (avatar && ["image/jpeg", "image/png", "image/jpg", "image/gif"].includes(avatar.mimetype)) {
+                const fileBuffer = await avatar.toBuffer();
+                const fileName = avatar.filename ? `${Date.now()}-${avatar.filename}` : "";
+                if (fileName) {
+                    avatar_url = await s3Service.uploadFile(fileBuffer, fileName);
+                }
+            }
+    
             const updatedProfile = await sosUserService.updateSosUser(userId, {
                 id: userProfile.id,
                 user_id: userProfile.user_id,
@@ -94,10 +74,9 @@ class ProfileController {
                 phone_number: userProfile.phone_number,
                 is_profile_completed: true
             });
-
+    
             return reply.status(200).send(successResponse("User profile updated successfully!", updatedProfile, 200));
         } catch (error) {
-            console.log("in the catch")
             if (error.code === "FST_REQ_FILE_TOO_LARGE") {
                 return reply.status(413).send(errorResponse("File size exceeds the allowed limit", 413));
             }
@@ -105,6 +84,7 @@ class ProfileController {
             return reply.status(500).send(errorResponse(error.message, 500));
         }
     }
+    
 
 
 }

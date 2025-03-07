@@ -139,6 +139,7 @@ class UserAuthService {
       last_name: user.dataValues.last_name,
       phone_number: user.dataValues.phone_number,
       is_profile_completed: sosUser.dataValues.is_profile_completed,
+      contact_added: sosUser.dataValues.contact_added
     }
     return sosUserDTO;
   }

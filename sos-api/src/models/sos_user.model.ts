@@ -10,6 +10,7 @@ class SosUser extends Model {
   public address!: string;
   public avatar_url!: string;
   public is_profile_completed!: boolean;
+  public contact_added!: boolean;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -42,6 +43,11 @@ SosUser.init(
       allowNull: true,
     },
     is_profile_completed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    contact_added: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,

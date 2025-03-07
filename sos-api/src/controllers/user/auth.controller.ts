@@ -37,6 +37,7 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
       return reply.status(400).send(errorResponse("User with this email already exists.", 400));
     }
     const newSosUser = await createUserAccountService(userData);
+    console.log('newSosUser :>> ', newSosUser);
     if (newSosUser) {
       const token = jwt.sign(
         { user_id: newSosUser.id, role: "sos_user" },
@@ -62,7 +63,8 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
         last_name: newSosUser.last_name,
         date_of_birth: newSosUser.date_of_birth,
         phone_number: newSosUser.phone_number,
-        is_profile_completed: newSosUser.is_profile_completed
+        is_profile_completed: newSosUser.is_profile_completed,
+        contact_added: newSosUser.contact_added
       };
       return reply
         .status(201)
@@ -123,7 +125,7 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     // if (otpResponse.statusCode !== 200) {
     //   return otpResponse;
     // }
-
+    console.log('sos_user :>> ', sos_user);
     const userProfile = {
       user_id: user.dataValues.id,
       email: user.dataValues.email,
@@ -131,7 +133,8 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
       last_name: user.dataValues.last_name,
       date_of_birth: user.dataValues.date_of_birth,
       phone_number: user.dataValues.phone_number,
-      is_profile_completed: sos_user.dataValues.is_profile_completed
+      is_profile_completed: sos_user.dataValues.is_profile_completed,
+      contact_added: sos_user.dataValues.contact_added
     };
     console.log('userProfile :>> ', userProfile);
     return reply

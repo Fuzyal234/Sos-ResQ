@@ -68,6 +68,7 @@ const createUserAccountService = async (data: CreateUserAccountDTO): Promise<Sos
       last_name: newUser.dataValues.last_name,
       phone_number: newUser.dataValues.phone_number,
       is_profile_completed: newSosUser.dataValues.is_profile_completed,
+      contact_added: newSosUser.dataValues.contact_added
     }
     return sosUser;
   } catch (error) {

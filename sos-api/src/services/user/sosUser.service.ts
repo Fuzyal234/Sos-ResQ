@@ -18,6 +18,7 @@ class SosUserService {
         }
 
         const plainSosUser = sosUser.get({ plain: true });
+        console.log('plainSosUser :>> ', plainSosUser);
         const sosUserDTO: SosUserDTO = {
             id: plainSosUser.id,
             user_id: plainSosUser.user_id,
@@ -29,7 +30,8 @@ class SosUserService {
             phone_number: plainSosUser.user.phone_number,
             address: plainSosUser.address,
             avatar_url: plainSosUser.avatar_url,
-            is_profile_completed: plainSosUser.is_profile_completed
+            is_profile_completed: plainSosUser.is_profile_completed,
+            contact_added: plainSosUser.contact_added
         };
 
         return sosUserDTO;
@@ -55,10 +57,30 @@ class SosUserService {
                 );
             }
 
-            await sosUserModel.update(sosUser, { transaction });
-
-            await transaction.commit(); 
-            return sosUser;
+            const updatedSosUser = await sosUserModel.update(sosUser, { transaction });
+            
+            await transaction.commit();
+            const sosUserM = await SosUser.findOne({
+                where: { id: id },
+                include: [{ model: User, as: "user" }]
+            });
+            const plainSosUser = sosUserM.get({ plain: true });
+            console.log('plainSosUser :>> ', plainSosUser);
+            const sosUserDTO: SosUserDTO = {
+                id: plainSosUser.id,
+                user_id: plainSosUser.user_id,
+                email: plainSosUser.user.email,
+                first_name: plainSosUser.user.first_name,
+                last_name: plainSosUser.user.last_name,
+                date_of_birth: plainSosUser.user.date_of_birth,
+                gender: plainSosUser.user.gender,
+                phone_number: plainSosUser.user.phone_number,
+                address: plainSosUser.address,
+                avatar_url: plainSosUser.avatar_url,
+                is_profile_completed: plainSosUser.is_profile_completed,
+                contact_added: plainSosUser.contact_added
+            };
+            return  sosUserDTO;
         } catch (error: unknown) {
             await transaction.rollback();
             throw new Error(`Failed to update SosUser: ${error as Error}.message}`);

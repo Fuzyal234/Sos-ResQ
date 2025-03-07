@@ -53,6 +53,7 @@ interface SosUserDTO {
   address: string;
   avatar_url: string;
   is_profile_completed: boolean
+  contact_added: boolean
 }
 
 interface UserAccountReturnDTO {

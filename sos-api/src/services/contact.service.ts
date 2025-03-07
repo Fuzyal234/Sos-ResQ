@@ -1,3 +1,4 @@
+import { SosUser } from "../models";
 import Contact from "../models/contact.model";
 import { CreateContactDTO } from "../types/user";
 
@@ -6,6 +7,12 @@ class ContactService {
     async createContacts(contacts: CreateContactDTO[]) {
         try {
             const newContacts = await Contact.bulkCreate(contacts);
+            if(newContacts){
+                const sos_user = await SosUser.findByPk(contacts[0].sos_user_id);
+                if(sos_user){
+                    await sos_user.update({ contact_added: true });
+                }
+            }
             return newContacts;
         } catch (error) {
             console.error("Error creating contacts:", error);

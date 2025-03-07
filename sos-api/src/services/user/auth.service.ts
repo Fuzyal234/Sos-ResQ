@@ -79,10 +79,7 @@ const createUserAccountService = async (data: CreateUserAccountDTO): Promise<Sos
 
 class UserAuthService {
   async  handleUserLogin(user: any, reply: FastifyReply) {
-    console.log('inside handleUserLogin');
-    console.log('user :>> ', user);
     const token = await utilityService.generateToken(user.id as UUID, "sos_user");
-    console.log('token :>> ', token);
     const sosUser = await SosUser.findOne({ where: { user_id: user.id } });
     sessionService.createOrUpdateSession(user.user_id as UUID, token as string);
   
@@ -95,10 +92,9 @@ class UserAuthService {
       phone_number: user.phone_number,
       avatar_url: user.avatar_url,
       is_profile_completed: user.is_profile_completed,
+      contact_added: user.contact_added
     };
-  
-    console.log('userProfile :>> ', userProfile);
-  
+    
     return reply
       .status(201)
       .send(successResponse("Your account has been created successfully!", { token, user: userProfile }, 201));

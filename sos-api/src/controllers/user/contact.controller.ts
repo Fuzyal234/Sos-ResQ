@@ -6,16 +6,21 @@ import contactService from "../../services/contact.service";
 
 class ContactController {
     async create(request: FastifyRequest, reply: FastifyReply) {
-        const contact = request.body as CreateContactDTO;
+        const contacts = request.body as CreateContactDTO[];
         const sos_user_id = request.user as UUID;
-        contact.sos_user_id = sos_user_id;
+        
+        // Assign sos_user_id to each contact
+        const contactsWithUserId = contacts.map(contact => ({
+            ...contact,
+            sos_user_id
+        }));
+    
         try {
-
-            const newContact = await contactService.createContact(contact);
-
-            return reply.status(201).send(successResponse("Contact created successfully!", newContact, 201));
-        }catch (error) {
-            console.error("Error creating contact:", error);
+            console.log('contactsWithUserId :>> ', contactsWithUserId);
+            const newContacts = await contactService.createContacts(contactsWithUserId);
+            return reply.status(201).send(successResponse("Contacts created successfully!", newContacts, 201));
+        } catch (error) {
+            console.error("Error creating contacts:", error);
             return reply.status(500).send(errorResponse(error.message, 500));
         }
     }

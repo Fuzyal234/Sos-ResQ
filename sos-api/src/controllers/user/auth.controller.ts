@@ -162,7 +162,7 @@ export const refreshToken = async (request: FastifyRequest, reply: FastifyReply)
       user_id: payload.user_id,
       role: payload.role
     });
-    const referesh_token = await generateRefreshToken({
+    const new_refresh_token = await generateRefreshToken({
       user_id: payload.user_id,
       role: payload.role
     })
@@ -175,15 +175,15 @@ export const refreshToken = async (request: FastifyRequest, reply: FastifyReply)
 
     if (existingSession) {
       await session.update(
-        { token, refresh_token },
+        { token, refresh_token: new_refresh_token },
         { where: { user_id: sos_user.dataValues.user_id } }
       );
     } else {
-      await session.create({ user_id: sos_user.dataValues.user_id, token, refresh_token });
+      await session.create({ user_id: sos_user.dataValues.user_id, token, refresh_token: new_refresh_token });
     }
     return reply
       .status(200)
-      .send(successResponse("Token refreshed successfully.", { token, refresh_token }, 200));
+      .send(successResponse("Token refreshed successfully.", { token, refresh_toekn:new_refresh_token }, 200));
   } catch (err) {
     console.error("Error during refresh token:", err);
     return reply.status(500).send(errorResponse("Internal server error", 500));

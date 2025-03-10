@@ -9,6 +9,8 @@ import {
   resetPassword,
   forgotPassword,
   googleAuthCallback,
+  refreshToken,
+  
 } from "../../controllers/user/auth.controller";
 import { userValidationSchemas } from "../../validation/user";
 import User from "../../models/user.model";
@@ -21,6 +23,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({ method: "POST", url: "/signup", schema: { body: joiToJsonSchema(userValidationSchemas.registerUserValidation) }, handler: createUserAccount, });
 
   fastify.route({ method: "POST", url: "/login", schema: { body: joiToJsonSchema(userValidationSchemas.loginUser) }, handler: loginUser, });
+  fastify.route({method: "POST", url: "/refresh-token", handler: refreshToken});
   fastify.route({ method: "POST", url: "/send-otp", handler: sendOtp });
   fastify.route({ method: "POST", url: "/user/verify-otp", handler: verifyOtp, });
   fastify.route({ method: "POST", url: "/user/forgot-password", handler: forgotPassword, });

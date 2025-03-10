@@ -39,21 +39,18 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
     const newSosUser = await createUserAccountService(userData);
     console.log('newSosUser :>> ', newSosUser);
     if (newSosUser) {
-      const token = jwt.sign(
-        { user_id: newSosUser.id, role: "sos_user" },
-        process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
-        { expiresIn: "24h" }
-      );
+      const token = await generateAccessToken({ user_id: newSosUser.id, role: "sos_user" });
+      const refresh_token = await generateRefreshToken({ user_id: newSosUser.id, role: "sos_user" })
 
       const existingSession = await session.findOne({ where: { user_id: newSosUser.user_id } });
       if (existingSession) {
         await session.update(
-          { token },
+          { token, refresh_token},
           { where: { user_id: newSosUser.id } }
         );
       } else {
         const user = await SosUser.findByPk(newSosUser.id);
-        const newSession = await session.create({ user_id: newSosUser.user_id, token });
+        const newSession = await session.create({ user_id: newSosUser.user_id, token, refresh_token });
         console.log('newSession :>> ', newSession);
       }
       const userProfile = {
@@ -68,7 +65,7 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
       };
       return reply
         .status(201)
-        .send(successResponse("Your account has been created successfully!", { token, user: userProfile }, 201));
+        .send(successResponse("Your account has been created successfully!", { token, refresh_token, user: userProfile }, 201));
     }
   } catch (error) {
     console.error("Error during signup:", error);
@@ -101,22 +98,21 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     if (!sos_user) {
       return reply.status(404).send(errorResponse("SOS User not found", 404));
     }
-
-    const token = jwt.sign(
-      { user_id: sos_user.dataValues.id, role: user.dataValues.role },
-      process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
-      { expiresIn: "24h" }
-    );
-
+    const payload = {
+      user_id: sos_user.dataValues.id,
+      role: user.dataValues.role
+    }
+    const token = await generateAccessToken(payload);
+    const refresh_token = await generateRefreshToken(payload);
     const existingSession = await session.findOne({ where: { user_id: user.dataValues.id } });
 
     if (existingSession) {
       await session.update(
-        { token },
+        { token, refresh_token },
         { where: { user_id: user.dataValues.id } }
       );
     } else {
-      await session.create({ user_id: user.dataValues.id, token });
+      await session.create({ user_id: user.dataValues.id, token, refresh_token });
     }
     // Stoped for now
 
@@ -139,13 +135,60 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     console.log('userProfile :>> ', userProfile);
     return reply
       .status(200)
-      .send(successResponse("Login successful", { token, user: userProfile }, 200));
+      .send(successResponse("Login successful", { token,refresh_token, user: userProfile }, 200));
 
   } catch (err) {
     console.error("Error during login:", err);
     return reply.status(500).send(errorResponse("Internal server error", 500));
   }
 };
+
+export const refreshToken = async (request: FastifyRequest, reply: FastifyReply) => {
+
+  try {
+    const { refresh_token } = request.body as { refresh_token: string };
+
+    if (!refresh_token) {
+      return reply.status(400).send(errorResponse("Refresh token is required.", 400));
+    }
+
+    const payload = await verifyRefreshToken(refresh_token);
+
+    if (!payload) {
+      return reply.status(401).send(errorResponse("Invalid refresh token.", 401));
+    }
+
+    const token = await generateAccessToken({
+      user_id: payload.user_id,
+      role: payload.role
+    });
+    const new_refresh_token = await generateRefreshToken({
+      user_id: payload.user_id,
+      role: payload.role
+    })
+    const sos_user = await SosUser.findOne({ where: { id: payload.user_id } });
+
+    if (!sos_user) {
+      return reply.status(404).send(errorResponse("SOS User not found", 404));
+    }
+    const existingSession = await session.findOne({ where: { user_id: sos_user.dataValues.user_id } });
+
+    if (existingSession) {
+      await session.update(
+        { token, refresh_token: new_refresh_token },
+        { where: { user_id: sos_user.dataValues.user_id } }
+      );
+    } else {
+      await session.create({ user_id: sos_user.dataValues.user_id, token, refresh_token: new_refresh_token });
+    }
+    return reply
+      .status(200)
+      .send(successResponse("Token refreshed successfully.", { token, refresh_toekn:new_refresh_token }, 200));
+  } catch (err) {
+    console.error("Error during refresh token:", err);
+    return reply.status(500).send(errorResponse("Internal server error", 500));
+  }
+}
 
 export const sendOtp = async (request: FastifyRequest, reply: FastifyReply) => {
   const { email } = request.body as { email: string };
@@ -321,3 +364,30 @@ export async function logoutUser(token: string): Promise<{ success: boolean; err
 }
 
 
+export async function generateAccessToken(payload){
+  const token = jwt.sign(
+    payload,
+    process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
+    { expiresIn: "24h" }
+  );
+  return token
+}
+
+export async function generateRefreshToken(payload){
+  const refresh_token = jwt.sign(
+    payload,
+    process.env.JWT_SECRET || "devflovvdevflovvdevflovv",
+    { expiresIn: "7d" }
+  );
+  return refresh_token
+}
+
+export async function verifyRefreshToken(refresh_token: string){
+  try {
+    const payload = jwt.verify(refresh_token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv");
+    console.log('payload :>> ', payload);
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}

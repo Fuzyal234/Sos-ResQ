@@ -54,15 +54,19 @@ export default async function userRoutes(fastify: FastifyInstance) {
     fastify.route({ method: "GET", url: "/user/contacts", preHandler: authMiddleware, handler: contactController.index, });
     fastify.route({
         method: "PUT",
-        url: "/user/contact/:id",
+        url: "/user/contact",
         schema: {
             body: {
-                type: "object",
-                required: ["name", "relation", "phone"],
-                properties: {
-                    name: { type: "string" },
-                    relation: { type: "string" },
-                    phone: { type: "string" }
+                type: "array",
+                items: {
+                    type: "object",
+                    required: ["id","name", "relation", "phone"],
+                    properties: {
+                        id: { type: "string" },
+                        name: { type: "string" },
+                        relation: { type: "string" },
+                        phone: { type: "string" }
+                    }
                 }
             }
         },

@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CreateContactDTO } from "../../types/user";
+import { CreateContactDTO, UpdateContactDTO } from "../../types/user";
 import { UUID } from "crypto";
 import { errorResponse, successResponse } from "../../helper/responses";
 import contactService from "../../services/contact.service";
@@ -47,12 +47,11 @@ class ContactController {
     }
 
     async update(request: FastifyRequest, reply: FastifyReply) {
-        const contact = request.body as CreateContactDTO;
-        const id = (request.params as { id: string }).id;
-        console.log('id :>> ', id);
+        const contacts = request.body as UpdateContactDTO[];
+        
         try {
-            const updatedContact = await contactService.updateContact(contact, id);
-            return reply.status(200).send(successResponse("Contact updated successfully!", updatedContact, 200));
+            const updatedContacts = await contactService.updateContacts(contacts);
+            return reply.status(200).send(successResponse("Contact updated successfully!", updatedContacts, 200));
         } catch (error) {
             console.error("Error updating contact:", error);
             return reply.status(500).send(errorResponse("Internal server error.", 500));

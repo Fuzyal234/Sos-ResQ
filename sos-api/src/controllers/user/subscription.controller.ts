@@ -66,7 +66,7 @@ class SubscriptionController {
 
             const session = await stripeService.createCheckoutSession(priceId, email, success_url, cancel_url);
 
-
+            console.log('session :>> ', session.id);
             const sos_subscription = await SubscriptionService.createSosUserSubscription(subscriptionData);
             paymentService.createPayment(sos_user_id, sos_subscription.dataValues.id, subscription?.dataValues.price, session.id);
             if(subscription?.dataValues.members_count === 1){

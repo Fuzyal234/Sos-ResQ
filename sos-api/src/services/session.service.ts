@@ -4,9 +4,8 @@ import { SosUser } from "../models";
 
 
 class SessionService {
-    async createOrUpdateSession(user_id: UUID, token: string): Promise<void> {
-      console.log("inside createOrUpdateSession");
-      console.log('user_id :>> ', user_id);
+    async createOrUpdateSession(user_id: UUID, token: string, refresh_token: string): Promise<void> {
+      session.upsert({ user_id: user_id, token, refresh_token });
         const existingSession = await session.findOne({ where: { user_id: user_id } });
         if (existingSession) {
           await session.update(

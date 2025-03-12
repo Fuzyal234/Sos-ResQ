@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { agentAuthMiddleware } from "../../middlewares/auth";
+import { agentAuthMiddleware } from "../../middlewares/auth.middleware";
 import { UUID } from "crypto";
 import { agentSockets } from "../user/user.routes";
 import { Agent } from "../../models";
@@ -42,6 +42,13 @@ export default async function agentRoutes(fastify: FastifyInstance) {
             Agent.update({ status: 'offline' }, { where: { user_id: agentId } });
         });
     });
+
+    // fastify.route({ method: "GET", url: "/io/agent", preHandler: agentAuthMiddleware, handler: async (request: FastifyRequest, reply: FastifyReply) => {
+    //     const agentId = request.user as UUID;
+    //     const agent = await Agent.findByPk(agentId);
+    //     fastify.io.emit('agent', agent);
+    //     return agent;
+    // }});
 }
 
 const agentsRoom = new Map<UUID, WebSocket>();

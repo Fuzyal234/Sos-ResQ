@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { index, create, update, show } from "../../controllers/admin/agent.controller";
 import { subscriptionController } from "../../controllers/admin/subscription.controller";
-import { adminAuthMiddleware, authMiddleware } from "../../middlewares/auth";
+import { adminAuthMiddleware, authMiddleware } from "../../middlewares/auth.middleware";
 
 
 export default async function adminRoutes(fastify: FastifyInstance) {

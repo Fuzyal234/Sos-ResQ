@@ -10,6 +10,8 @@ import { UUID } from 'crypto';
 import sessionService from '../session.service';
 import { successResponse } from '../../helper/responses';
 import s3Service from '../s3.service';
+import AuthUtils from '../../utils/authUtils';
+import { session } from "../../models/session";
 
 
 const createUser = async (data: CreateUserDTO): Promise<User> => {
@@ -80,8 +82,10 @@ const createUserAccountService = async (data: CreateUserAccountDTO): Promise<Sos
 class UserAuthService {
   async  handleUserLogin(user: any, reply: FastifyReply) {
     const token = await utilityService.generateToken(user.id as UUID, "sos_user");
-    const sosUser = await SosUser.findOne({ where: { user_id: user.id } });
-    sessionService.createOrUpdateSession(user.user_id as UUID, token as string);
+    const refresh_token = await AuthUtils.generateRefreshToken({ user_id: user.user_id, role: "sos_user" });
+    const sosUser = await SosUser.findOne({ where: { user_id: user.user_id } });
+
+    session.upsert({ user_id: sosUser.dataValues.user_id, token, refresh_token });
   
     const userProfile = {
       user_id: user.id,
@@ -97,12 +101,11 @@ class UserAuthService {
     
     return reply
       .status(201)
-      .send(successResponse("Your account has been created successfully!", { token, user: userProfile }, 201));
+      .send(successResponse("Your account has been created successfully!", { token, refresh_token, user: userProfile }, 201));
   }
 
   async  createUserFromGoogle(payload: object, googleUserId: string) {
     let filename = googleUserId + ".jpg";
-    console.log('payload :>> ', payload);
     const { email } = payload as { email: string };
     const { name} = payload as { name: string };
     const {picture} = payload as { picture: string };
@@ -111,7 +114,6 @@ class UserAuthService {
     const pictureBuffer = Buffer.from(buffer);
    
     const avatar_url = await s3Service.uploadFile(pictureBuffer,filename);
-    console.log('avatar_url :>> ', avatar_url);
     const userData = {
       first_name: name.split(' ')[0],
       last_name: name.split(' ')[1],
@@ -120,13 +122,12 @@ class UserAuthService {
       password: googleUserId + process.env.GOOGLE_CLIENT_ID,
     };
     const sosUserDTO = await createUserAccountService(userData);
-    console.log('sosUserDTO :>> ', sosUserDTO);
     return sosUserDTO;
   }
   
   async getSosUserDTO(user: any) {
     const sosUser = await SosUser.findOne({ where: { user_id: user.dataValues.id } });
-    console.log('sosUser :>> ', sosUser);
+    
     const sosUserDTO : SosUserDTO = {
       id: sosUser.dataValues.id,
       user_id : user.dataValues.id,

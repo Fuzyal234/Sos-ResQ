@@ -8,7 +8,7 @@ import { UUID } from 'crypto';
 export class ProtectedEntities extends Model {
 
   public id!: string;
-  public entity_id!: number;
+  public entity_id!: string;
   public entity_type!: string;
   public sos_user_subscription_id!: UUID;
 }
@@ -21,7 +21,7 @@ ProtectedEntities.init(
       primaryKey: true,
     },
     entity_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     entity_type: {

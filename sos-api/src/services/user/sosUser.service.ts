@@ -52,6 +52,7 @@ class SosUserService {
                         first_name: sosUser.first_name,
                         last_name: sosUser.last_name,
                         date_of_birth: sosUser.date_of_birth,
+                        gender: sosUser.gender,
                     },
                     { transaction }
                 );

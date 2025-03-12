@@ -13,6 +13,7 @@ class Payment extends Model {
   public amount!: number;
   public transaction_id!: string;
   public status!: string;
+  public session_id!: string;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -52,6 +53,10 @@ Payment.init(
     status: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    session_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

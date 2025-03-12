@@ -1,5 +1,5 @@
-import { FastifyInstance } from "fastify";
-import { authMiddleware } from "../../middlewares/auth";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { authMiddleware } from "../../middlewares/auth.middleware";
 import { requestController } from "../../controllers/user/request.controller";
 import { UUID } from "crypto";
 import { WebSocket } from 'ws';
@@ -14,11 +14,11 @@ import familyController from "../../controllers/user/family.controller";
 import contactController from "../../controllers/user/contact.controller";
 
 export default async function userRoutes(fastify: FastifyInstance) {
-
+    
     fastify.route({ method: "GET", url: "/subscriptions", handler: subscriptionController.index, });
     fastify.route({ method: "POST", url: "/user/subscribe", preHandler: authMiddleware, handler: subscriptionController.subscribe, });
 
-    fastify.route({ method: "POST", url: "/user/requests", preHandler: authMiddleware, handler: requestController.createRequest, });
+    fastify.route({ method: "POST", url: "/user/requests", preHandler: authMiddleware, handler: (req, res) => requestController.createRequest(fastify, req, res), });
     fastify.route({ method: "GET", url: "/user/requests", preHandler: authMiddleware, handler: requestController.getQueuedJobs, });
 
     fastify.route({ method: "GET", url: "/user/profile", preHandler: authMiddleware, handler: profileController.getProfile, });

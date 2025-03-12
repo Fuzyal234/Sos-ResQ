@@ -14,7 +14,7 @@ import {
 } from "../../controllers/user/auth.controller";
 import { userValidationSchemas } from "../../validation/user";
 import User from "../../models/user.model";
-import { authMiddleware } from "../../middlewares/auth";
+import { authMiddleware } from "../../middlewares/auth.middleware";
 import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema from "joi-to-json";
 
@@ -29,27 +29,51 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({ method: "POST", url: "/user/forgot-password", handler: forgotPassword, });
   fastify.route({ method: "POST", url: "/user/reset-password", handler: resetPassword, });
 
-  fastify.route({ method: "POST", url: "/google-auth", schema: { body: 
-    {
-      type: "object",
-      required: ["google_auth_token"],
-      properties: {
-        token: { type: "string" }
-      },
-      errorMessage: {
-        type: "The request body must be an object.",
-        required: {
-            token: "The 'google_auth_token' field is required."
-        },
+  fastify.route({
+    method: "POST", url: "/google-auth", schema: {
+      body:
+      {
+        type: "object",
+        required: ["google_auth_token"],
         properties: {
+          token: { type: "string" }
+        },
+        errorMessage: {
+          type: "The request body must be an object.",
+          required: {
+            token: "The 'google_auth_token' field is required."
+          },
+          properties: {
             token: "The 'google_auth_token' field must be a string."
+          }
         }
-    }
 
-    }
-   }, handler: googleAuthCallback });
+      }
+    }, handler: googleAuthCallback
+  });
+// fastify.route({
+//   method: "POST",
+//   url: "apple-auth",
+//   schema: {
+//     body: {
+//       type: "object",
+//       required: ["apple_auth_token"],
+//       properties: {
+//         token: { type: "string" }
+//       },
+//       errorMessage: {
+//         type: "The request body must be an object.",
+//         required: {
+//           token: "The 'apple_auth_token' field is required."
+//         },
+//         properties: {
+//           token: "The 'apple_auth_token' field must be a string."
+//         }}
+//     }
+//   },
+//   handler: appleAuth
+// })
 
-  
   fastify.route({
     method: "DELETE", url: "/logout", preHandler: authMiddleware, handler: async (request: FastifyRequest, reply: FastifyReply) => {
       try {

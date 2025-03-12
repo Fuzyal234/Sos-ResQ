@@ -5,6 +5,8 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import User from '../../models/user.model';
 import { Agent } from '../../models';
+import AuthUtils from '../../utils/authUtils';
+import { ref } from 'joi';
 
 export const loginAgent = async (request: FastifyRequest, reply: FastifyReply) => {
     const { email, password } = request.body as { email: string; password: string };
@@ -27,24 +29,17 @@ export const loginAgent = async (request: FastifyRequest, reply: FastifyReply) =
       if (!agent) {
         return reply.status(404).send(errorResponse("Agent not found", 404));
       }
-  
-      const token = jwt.sign(
-        { user_id: user.dataValues.id, role: user.dataValues.role , agent_id: agent.dataValues.id},
-        process.env.JWT_SECRET || "devflovvdevflovvdevflovv", 
-        { expiresIn: "4h" }
-      );
-  
-      const existingSession = await session.findOne({ where: { user_id: user.dataValues.id } });
-  
-      if (existingSession) {
-        await session.update(
-          { token }, 
-          { where: { user_id: user.dataValues.id } }
-        );
-      } else {
-        await session.create({ user_id: user.dataValues.id, token });
-      }
-  
+      const token = AuthUtils.generateAccessToken({
+        user_id: user.dataValues.id,
+        role: user.dataValues.role
+      })
+      const refresh_token = AuthUtils.generateRefreshToken({
+        user_id: user.dataValues.id,
+        role: user.dataValues.role
+      })
+      
+      session.upsert({ user_id: user.dataValues.id, token, refresh_token });
+      
       const userProfile = {
         id: user.dataValues.id,
         email: user.dataValues.email,
@@ -56,7 +51,7 @@ export const loginAgent = async (request: FastifyRequest, reply: FastifyReply) =
   
       return reply
         .status(200)
-        .send(successResponse("Login successful and OTP sent", { token, user: userProfile }, 200));
+        .send(successResponse("Login successful and OTP sent", { token, refresh_token, user: userProfile }, 200));
   
     } catch (err) {
       console.error("Error during login:", err);

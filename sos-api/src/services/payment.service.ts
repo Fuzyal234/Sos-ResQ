@@ -3,7 +3,7 @@ import { Payment } from "../models";
 import { UUID } from "crypto";
 
 class PaymentService {
-    async createPayment(sos_user_id: UUID, sos_user_subscription_id: UUID, amount: number, session_id) {
+    async createPayment(sos_user_id: UUID, sos_user_subscription_id: UUID, amount: number, session_id:string) {
         Payment.create(
             {
                 sos_user_id,
@@ -18,7 +18,7 @@ class PaymentService {
         );
     }
 
-    async updatePayment(session_id, status: string) {
+    async updatePayment(session_id:string, status: string) {
         Payment.update(
             {
                 status,

@@ -1,6 +1,6 @@
 import { SosUser } from "../models";
 import Contact from "../models/contact.model";
-import { CreateContactDTO } from "../types/user";
+import { CreateContactDTO, UpdateContactDTO } from "../types/user";
 
 class ContactService {
 
@@ -45,6 +45,25 @@ class ContactService {
             throw error;
         }
     }
+    async updateContacts(contacts: UpdateContactDTO[]) {
+        const transaction = await Contact.sequelize?.transaction();
+        let updatedContacts = [];
+        try {
+          for (const contact of contacts) {
+            const { id, ...updateData } = contact;
+            const [count, [updatedContact]] = (await Contact.update(updateData, { where: { id }, returning: true, transaction }));
+            updatedContacts.push(updatedContact);
+          }
+      
+          await transaction?.commit();
+          return updatedContacts;
+        } catch (error) {
+          await transaction?.rollback();
+          console.error("Error updating contacts:", error);
+          throw error;
+        }
+      }
+      
 
 }
 

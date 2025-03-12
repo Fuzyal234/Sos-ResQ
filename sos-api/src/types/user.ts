@@ -40,6 +40,13 @@ interface CreateContactDTO {
   phone_number: string
   relation: Relation
 }
+interface UpdateContactDTO {
+  sos_user_id: string
+  id: string
+  name: string
+  phone_number: string
+  relation: Relation
+}
 
 interface SosUserDTO {
   id: string;
@@ -69,6 +76,7 @@ export {
   CreateSosUserDTO,
   SosUserDTO,
   CreateContactDTO,
+  UpdateContactDTO,
   CreateUserAccountDTO,
   UserAccountReturnDTO,
   FastifyInstance

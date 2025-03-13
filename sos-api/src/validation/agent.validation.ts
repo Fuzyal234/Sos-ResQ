@@ -1,40 +1,55 @@
-import Joi from 'joi';
 
-export const agentValidationSchema = Joi.object({
-    first_name: Joi.string()
-      .min(2)
-      .required()
-      .messages({
-        "string.base": "First name must be a string.",
-        "string.empty": "First name cannot be empty.",
-        "string.min": "First name must be at least 2 characters long.",
-      }),
-    last_name: Joi.string()
-      .min(2)
-      .required()
-      .messages({
-        "string.base": "Last name must be a string.",
-        "string.empty": "Last name cannot be empty.",
-        "string.min": "Last name must be at least 2 characters long.",
-      }),
-    date_of_birth: Joi.date()
-      .iso()
-      .required()
-      .messages({
-        "date.base": "Date of birth must be a valid date.",
-      }),
-    phone_number: Joi.string()
-      .required()
-      .messages({
-        "string.base": "Phone number must be a string.",
-        "string.empty": "Phone number cannot be empty.",
-      }),
-    email: Joi.string()
-      .email()
-      .required()
-      .messages({
-        "string.base": "Email must be a string.",
-        "string.empty": "Email cannot be empty.",
-        "string.email": "Please provide a valid email address.",
-      })
-  });
+
+const createAgentValidationSchema = {
+  body: {
+    type: "object",
+    required: [
+      "first_name",
+      "last_name",
+      "email",
+      "date_of_birth",
+      "phone_number",
+      "password"
+    ],
+    properties: {
+      first_name: { type: "string", minLength: 1 },
+      last_name: { type: "string", minLength: 1 },
+      email: { type: "string", format: "email" },
+      date_of_birth: { type: "string", format: "date-time" },
+      phone_number: {
+        type: "string",
+        pattern: "^[+0-9]{7,15}$"
+      },
+      password: { type: "string", minLength: 6 }
+    }
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        message: { type: "string" },
+        error: { type: "boolean" },
+        data: { type: "object" }
+      }
+    }
+  }
+}
+ const updateAgentValidationSchema = {
+  body: {
+    type: "object",
+    required: ["first_name", "last_name", "email", "phone_number", "password"],
+    properties: {
+      first_name: { type: "string", minLength: 1 },
+      last_name: { type: "string", minLength: 1 },
+      email: { type: "string", format: "email" },
+      phone_number: {
+        type: "string",
+        pattern: "^[+0-9]{7,15}$"
+      },
+      password: { type: "string", minLength: 6 }
+    }
+  }
+}
+
+export { createAgentValidationSchema, updateAgentValidationSchema };

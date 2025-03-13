@@ -28,6 +28,10 @@ class SubscriptionController {
         try {
 
             const subscriptionData = request.body as CreateSubscriptionDTO;
+            const existing = await Subscription.findOne({ where: { name: subscriptionData.name } });
+            if (existing) {
+                throw new Error('Subscription plan name already exists');
+            }
             const { product, stripePrice } = await stripeService.createProduct(
                 subscriptionData.name,
                 subscriptionData.description,
@@ -35,14 +39,14 @@ class SubscriptionController {
             );
             subscriptionData.stripe_product_id = product.id
             subscriptionData.stripe_price_id = stripePrice.id
-            console.log('product :>> ', product);
-            console.log('stripePrice :>> ', stripePrice);
-            console.log('subscriptionData :>> ', subscriptionData);
-
             const subscription = await SubscriptionService.createSubscription(subscriptionData);
 
             return reply.status(201).send(successResponse("Subscription created successfully!", subscription, 201));
         } catch (error) {
+            if (error instanceof Error) {
+                return reply.status(400).send(errorResponse(error.message, 400));
+            }
+
             console.error("Error creating agent:", error);
             return reply.status(500).send(errorResponse("Internal server error.", 500));
         }
@@ -72,13 +76,14 @@ class SubscriptionController {
             const old_subscription = await SubscriptionService.getSubscriptionById(id);
             const old_price = old_subscription?.dataValues.price;
             const new_price = subscriptionData.price as number;
-       
-            if  (old_price !== new_price) {
+
+            if (old_price !== new_price) {
                 stripeService.updateProductPrice(old_subscription?.dataValues.stripe_product_id || "", subscriptionData.price);
             }
-            const product = await stripeService.updateProduct(old_subscription?.dataValues.stripe_product_id || "",{
+            const product = await stripeService.updateProduct(old_subscription?.dataValues.stripe_product_id || "", {
                 name: subscriptionData.name,
-                description: subscriptionData.description,});
+                description: subscriptionData.description,
+            });
             const subscription = await SubscriptionService.updateSubscription(subscriptionData, id);
             return reply.status(200).send(successResponse("Subscription updated successfully!", subscription, 200));
         } catch (error) {

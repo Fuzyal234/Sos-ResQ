@@ -1,5 +1,15 @@
 import Joi from 'joi';
 
+export const adminLoginValidationSchema = {
+  body: {
+    type: "object",
+    required: ["email", "password"],
+    properties: {
+      email: { type: "string", format: "email" },
+      password: { type: "string", minLength: 6 },
+    },
+  },
+}
 export const userValidationSchemas = {
   registerUserValidation: Joi.object({
     // address: Joi.string()

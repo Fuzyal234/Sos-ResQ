@@ -12,7 +12,7 @@ import {
   refreshToken,
   
 } from "../../controllers/user/auth.controller";
-import { userValidationSchemas } from "../../validation/user";
+import { registerUserValidationSchema, userValidationSchemas } from "../../validation/user";
 import User from "../../models/user.model";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { successResponse, errorResponse } from '../../helper/responses';
@@ -20,7 +20,7 @@ import joiToJsonSchema from "joi-to-json";
 
 
 export default async function userRoutes(fastify: FastifyInstance) {
-  fastify.route({ method: "POST", url: "/signup", schema: { body: joiToJsonSchema(userValidationSchemas.registerUserValidation) }, handler: createUserAccount, });
+  fastify.route({ method: "POST", url: "/signup", schema: registerUserValidationSchema, handler: createUserAccount, });
 
   fastify.route({ method: "POST", url: "/login", schema: { body: joiToJsonSchema(userValidationSchemas.loginUser) }, handler: loginUser, });
   fastify.route({method: "POST", url: "/refresh-token", handler: refreshToken});

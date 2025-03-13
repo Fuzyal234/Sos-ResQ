@@ -65,8 +65,7 @@ class SosUserService {
                 where: { id: id },
                 include: [{ model: User, as: "user" }]
             });
-            const plainSosUser = sosUserM.get({ plain: true });
-            console.log('plainSosUser :>> ', plainSosUser);
+            const plainSosUser = sosUserM?.get({ plain: true });
             const sosUserDTO: SosUserDTO = {
                 id: plainSosUser.id,
                 user_id: plainSosUser.user_id,

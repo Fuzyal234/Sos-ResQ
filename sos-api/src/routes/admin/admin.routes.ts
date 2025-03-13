@@ -4,7 +4,7 @@ import { subscriptionController } from "../../controllers/admin/subscription.con
 import { adminAuthMiddleware, authMiddleware } from "../../middlewares/auth.middleware";
 import joiToJsonSchema from "joi-to-json";
 import { createAgentValidationSchema, updateAgentValidationSchema } from "../../validation/agent.validation";
-import { subscriptionCreateValidationSchema } from "../../validation/subscribe.validation";
+import { subscriptionCreateValidationSchema, subscriptionUpdateValidationSchema } from "../../validation/subscribe.validation";
 
 export default async function adminRoutes(fastify: FastifyInstance) {
 
@@ -18,7 +18,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
   fastify.route({ method: "GET", url: "/admin/subscriptions", preHandler: adminAuthMiddleware, handler: subscriptionController.index, });
   fastify.route({ method: "POST", url: "/admin/subscriptions", schema: subscriptionCreateValidationSchema, preHandler: adminAuthMiddleware, handler: subscriptionController.create, });
   fastify.route({ method: "GET", url: "/admin/subscription/:id", preHandler: adminAuthMiddleware, handler: subscriptionController.show, });
-  fastify.route({ method: "PUT", url: "/admin/subscription/:id", preHandler: adminAuthMiddleware, handler: subscriptionController.update, });
+  fastify.route({ method: "PUT", url: "/admin/subscription/:id", schema: subscriptionUpdateValidationSchema, preHandler: adminAuthMiddleware, handler: subscriptionController.update, });
 
 
 }

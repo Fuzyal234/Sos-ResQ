@@ -8,7 +8,7 @@ import { closeSync } from "fs";
 
 class FamilyController {
     async inviteMember(request: FastifyRequest, reply: FastifyReply) {
-        const { email, user_subscription_id } = request.body;
+        const { email, user_subscription_id } = request.body as { email: string; user_subscription_id: string };
         const invited_by = request.user;
         console.log('invited_by :>> ', invited_by);
 
@@ -55,7 +55,7 @@ class FamilyController {
     }
 
     async acceptInvitation(request: FastifyRequest, reply: FastifyReply) {
-        const { token } = request.query;
+        const { token } = request.query as { token: string };
 
         try {
             const invitation = await FamilyMember.findOne({ where: { id: token, status: "pending" } });
@@ -63,7 +63,6 @@ class FamilyController {
                 return reply.status(400).send(errorResponse("Invalid or expired invitation.", 400));
             }
 
-            // Instead of redirecting to a frontend, return the invitation data
             return reply.status(200).send(successResponse("Invitation is valid.", { token }, 200));
         } catch (err) {
             console.error("Error validating invitation:", err);
@@ -72,7 +71,7 @@ class FamilyController {
     }
 
     async confirmInvite(request: FastifyRequest, reply: FastifyReply) {
-        const { token } = request.body;
+        const { token } = request.body as { token: string };
 
         try {
             const invitation = await FamilyMember.findOne({

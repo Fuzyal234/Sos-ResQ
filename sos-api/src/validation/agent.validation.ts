@@ -21,6 +21,25 @@ const createAgentValidationSchema = {
         pattern: "^[+0-9]{7,15}$"
       },
       password: { type: "string", minLength: 6 }
+    },
+    errorMessage: {
+      type: "The request body must be an object.",
+      required: {
+        first_name: "The 'first_name' field is required.",
+        last_name: "The 'last_name' field is required.",
+        email: "The 'email' field is required.",
+        date_of_birth: "The 'date_of_birth' field is required.",
+        phone_number: "The 'phone_number' field is required.",
+        password: "The 'password' field is required."
+      },
+      properties: {
+        first_name: "The 'first_name' field must be a string.",
+        last_name: "The 'last_name' field must be a string.",
+        email: "The 'email' field must be a string.",
+        date_of_birth: "The 'date_of_birth' field must be a string.",
+        phone_number: "The 'phone_number' field must be a string.",
+        password: "The 'password' field must be a string."
+      }
     }
   },
   response: {
@@ -48,6 +67,23 @@ const createAgentValidationSchema = {
         pattern: "^[+0-9]{7,15}$"
       },
       password: { type: "string", minLength: 6 }
+    },
+    errorMessage: {
+      type: "The request body must be an object.",
+      required: {
+        first_name: "The 'first_name' field is required.",
+        last_name: "The 'last_name' field is required.",
+        email: "The 'email' field is required.",
+        phone_number: "The 'phone_number' field is required.",
+        password: "The 'password' field is required."
+      },
+      properties: {
+        first_name: "The 'first_name' field must be a string.",
+        last_name: "The 'last_name' field must be a string.",
+        email: "The 'email' field must be a valid email.",
+        phone_number: "The 'phone_number' field must be a string.",
+        password: "The 'password' field must be a string."
+      }
     }
   }
 }

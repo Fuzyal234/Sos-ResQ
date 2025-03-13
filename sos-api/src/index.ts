@@ -12,17 +12,53 @@ import fastifyMultipart from "@fastify/multipart";
 import ajvErrors from 'ajv-errors';
 // import { Server } from 'socket.io';
 import socketPlugin from './plugins/socketPlugin';
+import Ajv from 'ajv'
+import ajvFormats from 'ajv-formats'
 
 
-const fastify = Fastify({
-  ajv: {
-    customOptions: {
-      allErrors: true,
-    },
-    plugins: [ajvErrors],
-  },
-  logger: true
+// const fastify = Fastify({
+//   ajv: {
+//     customOptions: {
+//       allErrors: true,
+//     },
+//     plugins: [ajvErrors],
+//   },
+//   logger: true
+// });
+const fastify = Fastify({ logger: true });
+
+const ajv = new Ajv({ allErrors: true, strict: false })
+ajvFormats(ajv)
+ajvErrors(ajv)
+
+fastify.setValidatorCompiler(({ schema }) => ajv.compile(schema))
+fastify.setErrorHandler((error, request, reply) => {
+  if (error.validation) {
+    const errors = error.validation.flatMap((e) => {
+      if (e.keyword === 'errorMessage' && Array.isArray(e.params?.errors)) {
+        return e.params.errors.map((innerErr) => ({
+          field: innerErr.params?.missingProperty || innerErr.instancePath.replace('/', ''),
+          message: e.message,
+        }));
+      }
+
+      return [{
+        field: e.params?.missingProperty || e.instancePath.replace('/', ''),
+        message: e.message,
+      }];
+    });
+
+    return reply.status(400).send({
+      status: 400,
+      message: 'Validation error',
+      error: true,
+      errors
+    });
+  }
+
+  reply.send(error);
 });
+
 
 // Start Server
 const startServer = async () => {

@@ -3,6 +3,7 @@ logs
 *.log
 npm-debug.log*
 data-postgres
+data-postgres-test
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
@@ -13,6 +14,7 @@ yarn.lock
 node_modules
 dist
 dist-ssr
+.env.test
 *.local
 
 # Editor directories and files

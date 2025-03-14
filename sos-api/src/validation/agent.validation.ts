@@ -1,3 +1,4 @@
+import { error } from "console";
 
 
 const createAgentValidationSchema = {
@@ -18,7 +19,10 @@ const createAgentValidationSchema = {
       date_of_birth: { type: "string", format: "date-time" },
       phone_number: {
         type: "string",
-        pattern: "^[+0-9]{7,15}$"
+        pattern: "^\\+?1?[-\\s.]?(\\([2-9][0-9]{2}\\)|[2-9][0-9]{2})[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4}$",
+        errorMessage: {
+          pattern: "The 'phone_number' field must be a valid phone number."
+        }
       },
       password: { type: "string", minLength: 6 }
     },
@@ -64,7 +68,11 @@ const createAgentValidationSchema = {
       email: { type: "string", format: "email" },
       phone_number: {
         type: "string",
-        pattern: "^[+0-9]{7,15}$"
+        pattern: "^\\+?1?[-\\s.]?(\\([2-9][0-9]{2}\\)|[2-9][0-9]{2})[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4}$",
+        errorMessage: {
+          type: "The phone number must be a string.",
+          pattern: "The phone number must be a valid phone number."
+        }
       },
       password: { type: "string", minLength: 6 }
     },

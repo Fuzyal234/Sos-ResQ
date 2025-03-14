@@ -36,9 +36,8 @@ export default async function userRoutes(fastify: FastifyInstance) {
     fastify.route({ method: "POST", url: "/user/accept-invite", preHandler: authMiddleware, handler: familyController.acceptInvitation, });
     fastify.route({ method: "POST", url: "/user/confirm-invite", schema: confirmMemberInviteValidationSchema, preHandler: authMiddleware, handler: familyController.confirmInvite, });
 
-    fastify.route({ method: "POST", url: "/user/contact", schema: contactCreateValidationSchema, preHandler: authMiddleware, handler: contactController.create, });
-
     fastify.route({ method: "GET", url: "/user/contacts", preHandler: authMiddleware, handler: contactController.index, });
+    fastify.route({ method: "POST", url: "/user/contact", schema: contactCreateValidationSchema, preHandler: authMiddleware, handler: contactController.create, });
     fastify.route({ method: "PUT", url: "/user/contact", schema: contactUpdateValidationSchema, preHandler: authMiddleware, handler: contactController.update, });
 
     fastify.route({ method: "POST", url: "/user/car", schema: carCreateValidationSchema, preHandler: authMiddleware, handler: carController.create, });

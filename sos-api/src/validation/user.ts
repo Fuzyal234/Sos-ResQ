@@ -13,14 +13,14 @@ export const adminLoginValidationSchema = {
 export const registerUserValidationSchema = {
   body: {
     type: "object",
-    required: ["email", "full_name", "date_of_birth", "phone_number", "password", "address"],
+    required: ["email", "phone_number", "password"],
     properties: {
       email: { type: "string", format: "email" },
       full_name: { type: "string" },
       date_of_birth: { type: "string", format: "date-time" },
       phone_number: {
         type: "string",
-        pattern: "^[+0-9]{7,15}$"
+        pattern: "^\\+?1?[-\\s.]?(\\([2-9][0-9]{2}\\)|[2-9][0-9]{2})[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4}$",
       },
       password: { type: "string", minLength: 6 },
       address: { type: "string" },
@@ -29,19 +29,13 @@ export const registerUserValidationSchema = {
       type: "The request body must be an object.",
       required: {
         email: "The 'email' field is required.",
-        full_name: "The 'full_name' field is required.",
-        date_of_birth: "The 'date_of_birth' field is required.",
         phone_number: "The 'phone_number' field is required.",
         password: "The 'password' field is required.",
-        address: "The 'address' field is required.",
       },
       properties: {
         email: "The 'email' field must be a string.",
-        full_name: "The 'full_name' field must be a string.",
-        date_of_birth: "The 'date_of_birth' must be a valid date.",
         phone_number: "The 'phone_number' must be a valid phone number.",
         password: "The 'password' field must be a string.",
-        address: "The 'address' field must be a string.",
       },
     },
   }

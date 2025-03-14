@@ -9,7 +9,10 @@ const contactCreateValidationSchema = {
                 relation: { type: 'string' },
                 phone: {
                     type: "string",
-                    pattern: "^[+0-9]{7,15}$"
+                    pattern: "^\\+?1?[-\\s.]?(\\([2-9][0-9]{2}\\)|[2-9][0-9]{2})[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4}$",
+                    errorMessage: {
+                        pattern: "The phone number must be a valid phone number."
+                    }
                 },
             },
             errorMessage: {
@@ -38,8 +41,11 @@ const contactUpdateValidationSchema = {
             relation: { type: 'string' },
             phone: {
                 type: "string",
-                pattern: "^[+0-9]{7,15}$"
-            },
+                pattern: "^\\+?1?[-\\s.]?(\\([2-9][0-9]{2}\\)|[2-9][0-9]{2})[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4}$",
+                errorMessage: {
+                    pattern: "The 'phone' field must be a valid phone number."
+                }
+            }
         },
         errorMessage: {
             required: {

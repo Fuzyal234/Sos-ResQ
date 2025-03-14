@@ -33,7 +33,7 @@ const contactCreateValidationSchema = {
 
 const contactUpdateValidationSchema = {
     body: {
-        type: 'object',
+        type: 'array',
         required: ['id','name', 'relation', 'phone'],
         properties: {
             id: { type: 'string' },

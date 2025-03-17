@@ -37,7 +37,7 @@ interface CreateSosUserDTO {
 interface CreateContactDTO {
   sos_user_id: string
   name: string
-  phone_number: string
+  phone: string
   relation: Relation
 }
 interface UpdateContactDTO {
@@ -71,6 +71,18 @@ interface UserAccountReturnDTO {
 interface FastifyInstance {
   googleOauth2: OAuth2Namespace
 }
+
+interface UserWithSosUser {
+  id: string;
+  email: string;
+  'sos_user.id': string;
+  'sos_user.user_id': string;
+  'sos_user.address': string | null;
+  'sos_user.avatar_url': string | null;
+  'sos_user.is_profile_completed': boolean;
+  'sos_user.contact_added': boolean;
+}
+
 export {
   CreateUserDTO,
   CreateSosUserDTO,
@@ -79,5 +91,6 @@ export {
   UpdateContactDTO,
   CreateUserAccountDTO,
   UserAccountReturnDTO,
-  FastifyInstance
+  FastifyInstance,
+  UserWithSosUser
 };

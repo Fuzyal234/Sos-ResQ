@@ -17,12 +17,12 @@ export const loginAdmin = async (request: FastifyRequest, reply: FastifyReply) =
     try {
       const user = await User.findOne({ where: { email, role: "admin" } });
       if (!user) {
-        return reply.status(404).send(errorResponse("User not found", 404));
+        return reply.status(401).send(errorResponse("Unauthorized", 401));
       }
   
       const isPasswordValid = await argon2.verify(user.dataValues.password, password);
       if (!isPasswordValid) {
-        return reply.status(400).send(errorResponse("Invalid password", 400));
+        return reply.status(401).send(errorResponse("Unauthorized", 401));
       }
       const token = AuthUtils.generateAccessToken({
         user_id: user.dataValues.id,

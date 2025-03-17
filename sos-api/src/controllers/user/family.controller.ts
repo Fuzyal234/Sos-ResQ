@@ -4,13 +4,12 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import FamilyMember from "../../models/family_member.model";
 import { SosUserSubscription, User } from "../../models/index";
 import { errorResponse, successResponse } from "../../helper/responses";
-import { closeSync } from "fs";
+import { UserWithSosUser } from "../../types/user";
 
 class FamilyController {
     async inviteMember(request: FastifyRequest, reply: FastifyReply) {
         const { email, user_subscription_id } = request.body as { email: string; user_subscription_id: string };
         const invited_by = request.user;
-        console.log('invited_by :>> ', invited_by);
 
         try {
             const user_subscription = await SosUserSubscription.findOne({ where: { id: user_subscription_id } });
@@ -23,7 +22,7 @@ class FamilyController {
                 return reply.status(400).send(errorResponse("User subscription is not active", 400));
             }
 
-            const user = await User.findOne({ where: { email }, raw: true, include: ['sos_user'] });
+            const user = await User.findOne({ where: { email }, raw: true, include: ['sos_user'] }) as UserWithSosUser | null;
             if (!user) {
                 return reply.status(404).send(errorResponse("User not found", 404));
             }
@@ -50,7 +49,11 @@ class FamilyController {
             return reply.status(200).send(successResponse("Invitation sent successfully.", null, 200));
         } catch (err) {
             console.error("Error inviting family member:", err);
-            return reply.status(500).send(errorResponse(err.message, 500));
+            if (err instanceof Error) {
+                return reply.status(500).send(errorResponse(err.message, 500));
+            } else {
+                return reply.status(500).send(errorResponse("Internal server error", 500));
+            }
         }
     }
 

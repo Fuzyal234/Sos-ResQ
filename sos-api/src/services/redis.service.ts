@@ -4,22 +4,54 @@ import { UUID } from "crypto";
 import { SosRequestDTO } from "../types/request.dto";
 
 class RedisService {
-
+    private static instance: RedisService;
     private sosQueue: any;
+    private connection: any;
+    private isConnected: boolean = false;
 
-    constructor() {
+    private constructor() {
         const { Queue, Worker } = require('bullmq');
         const Redis = require('ioredis');
 
-        const connection = new Redis({
-            host: process.env.REDIS_HOST || "redis",
+        // Use localhost for testing environment
+        const isTest = process.env.NODE_ENV === 'test';
+        const redisHost = isTest ? 'localhost' : (process.env.REDIS_HOST || "redis");
+
+        this.connection = new Redis({
+            host: redisHost,
             port: process.env.REDIS_PORT || 6379,
         });
 
-        this.sosQueue = new Queue('sos-queue', { connection });
+        this.sosQueue = new Queue('sos-queue', { connection: this.connection });
 
-        connection.on("connect", () => console.log("Connected to Redis"));
-        connection.on("error", (err: Error) => console.error("Redis Error:", err));
+        this.connection.on("connect", () => {
+            if (!this.isConnected) {
+                console.log("Connected to Redis");
+                this.isConnected = true;
+            }
+        });
+        
+        this.connection.on("error", (err: Error) => {
+            console.error("Redis Error:", err);
+            this.isConnected = false;
+        });
+    }
+
+    public static getInstance(): RedisService {
+        if (!RedisService.instance) {
+            RedisService.instance = new RedisService();
+        }
+        return RedisService.instance;
+    }
+
+    public async close() {
+        if (this.sosQueue) {
+            await this.sosQueue.close();
+        }
+        if (this.connection) {
+            await this.connection.quit();
+        }
+        this.isConnected = false;
     }
 
     public async addToQueue(sos_request: SosRequestDTO) {
@@ -68,4 +100,5 @@ class RedisService {
     }
 }
 
-export default new RedisService();
+// Export a singleton instance
+export default RedisService.getInstance();

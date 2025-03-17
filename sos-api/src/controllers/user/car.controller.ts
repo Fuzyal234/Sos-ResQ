@@ -15,7 +15,7 @@ class CarController {
 
             const newCar = await Car.create({ ...car, });
 
-            return successResponse("Car created successfully!", newCar, 201);
+            return reply.status(201).send(successResponse("Car created successfully!", newCar, 201));
         } catch (error) {
             console.error("Error creating car:", error);
             return reply.status(500).send(errorResponse("Internal server error", 500));

@@ -7,7 +7,7 @@ import { generateOTP, sendOTPEmail } from '../../utils/otpUtils';
 import { otpStore, sendEmail } from '../../middlewares/email';
 import { createUser, createUserAccountService } from '../../services/user/auth.service';
 import argon2 from 'argon2';
-import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, UserAccountReturnDTO } from '../../types/user';
+import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, SosUserDTO, UserAccountReturnDTO } from '../../types/user';
 import utilityService from '../../services/utility.service';
 import { UUID } from 'crypto';
 import sessionService from '../../services/session.service';
@@ -38,7 +38,6 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
       return reply.status(400).send(errorResponse("User with this email already exists.", 400));
     }
     const newSosUser = await createUserAccountService(userData);
-    console.log('newSosUser :>> ', newSosUser);
     if (newSosUser) {
       const token = AuthUtils.generateAccessToken({ user_id: newSosUser.id, role: "sos_user" });
       const refresh_token = AuthUtils.generateRefreshToken({ user_id: newSosUser.id, role: "sos_user" })
@@ -312,16 +311,14 @@ export async function googleAuthCallback(request: FastifyRequest, reply: Fastify
 
     const { email, sub: google_user_id } = payload;
     let user = await User.findOne({ where: { email } });
-
+    let userDto: SosUserDTO;
     if (user) {
-      user = await userAuthService.getSosUserDTO(user);
-    }
-
-    if (!user) {
-      user = await userAuthService.createUserFromGoogle(payload, google_user_id);
+      userDto = await userAuthService.getSosUserDTO(user);
+    } else {
+      userDto = await userAuthService.createUserFromGoogle(payload, google_user_id);
     }
     console.log('user ___:>> ', user);
-    return await userAuthService.handleUserLogin(user, reply);
+    return await userAuthService.handleUserLogin(userDto, reply);
   } catch (err) {
     console.error("Error during Google authentication:", err);
     return reply.status(500).send(errorResponse("Internal server error", 500));

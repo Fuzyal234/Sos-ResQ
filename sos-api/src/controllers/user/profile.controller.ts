@@ -5,6 +5,7 @@ import sosUserService from "../../services/user/sosUser.service";
 import { CreateSosUserDTO, SosUserDTO } from "../../types/user";
 import s3Service from "../../services/s3.service";
 import { validateProfileUpdateFields } from "../../validation/profile.validation";
+import { AppError } from "../../types/error";
 
 
 
@@ -41,8 +42,13 @@ class ProfileController {
             if (!userProfile) {
                 return reply.status(404).send(errorResponse("User not found", 404));
             }
-            console.log("request.body", request.body);
-            const { full_name, date_of_birth, address, gender, avatar } = request.body as UpdateProfileDTO;
+            const { full_name, date_of_birth, address, gender, avatar } = request.body as {
+                full_name: { value: string };
+                date_of_birth: { value: string };
+                address: { value: string };
+                gender: { value: string };
+                avatar: any;
+            };
 
             const date = new Date(date_of_birth.value);
             const [first_name = "", last_name = ""] = full_name.value.split(" ");
@@ -64,17 +70,18 @@ class ProfileController {
                 last_name,
                 gender: gender.value,
                 address: address.value,
-                date_of_birth: date_of_birth.value,
+                date_of_birth: new Date(date_of_birth.value),
                 avatar_url,
                 phone_number: userProfile.phone_number,
-                is_profile_completed: true
+                is_profile_completed: true,
+                contact_added: userProfile.contact_added,
             } as SosUserDTO
 
             const updatedProfile = await sosUserService.updateSosUser(userId, updateProfileData);
 
             return reply.status(200).send(successResponse("User profile updated successfully!", updatedProfile, 200));
-        } catch (error) {
-            if (error.code === "FST_REQ_FILE_TOO_LARGE") {
+        } catch (error: Error | any) {
+            if (error instanceof AppError && error.code === "FST_REQ_FILE_TOO_LARGE") {
                 return reply.status(413).send(errorResponse("File size exceeds the allowed limit", 413));
             }
             console.error("Profile update error:", error);

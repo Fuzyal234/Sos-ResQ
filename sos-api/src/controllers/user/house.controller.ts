@@ -17,7 +17,11 @@ class HouseController {
             return successResponse("House created successfully!", newHouse, 201);
         } catch (error) {
             console.error("Error creating house:", error);
-            return reply.status(500).send(errorResponse(error.message, 500));
+            if (error instanceof Error) {
+                return reply.status(500).send(errorResponse(error.message, 500));
+            }else{
+                return reply.status(500).send(errorResponse("Internal server error", 500));
+            }
         }
     }
 }

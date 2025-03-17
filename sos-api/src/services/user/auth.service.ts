@@ -8,13 +8,14 @@ import { FastifyReply } from 'fastify';
 import utilityService from '../utility.service';
 import { UUID } from 'crypto';
 import sessionService from '../session.service';
-import { successResponse } from '../../helper/responses';
+import { errorResponse, successResponse } from '../../helper/responses';
 import s3Service from '../s3.service';
 import AuthUtils from '../../utils/authUtils';
 import { session } from "../../models/session";
+import { Model } from 'sequelize';
 
 
-const createUser = async (data: CreateUserDTO): Promise<User> => {
+const createUser = async (data: CreateUserDTO): Promise<Model> => {
 
   let email = data.email;
 
@@ -84,7 +85,9 @@ class UserAuthService {
     const token = await utilityService.generateToken(user.id as UUID, "sos_user");
     const refresh_token = await AuthUtils.generateRefreshToken({ user_id: user.user_id, role: "sos_user" });
     const sosUser = await SosUser.findOne({ where: { user_id: user.user_id } });
-
+    if (!sosUser) {
+      return reply.status(404).send(errorResponse("SOS User not found", 404));
+    }
     session.upsert({ user_id: sosUser.dataValues.user_id, token, refresh_token });
   
     const userProfile = {
@@ -125,9 +128,11 @@ class UserAuthService {
     return sosUserDTO;
   }
   
-  async getSosUserDTO(user: any) {
+  async getSosUserDTO(user: any): Promise<SosUserDTO> {
     const sosUser = await SosUser.findOne({ where: { user_id: user.dataValues.id } });
-    
+    if (!sosUser) {
+      throw new Error("SosUser not found");
+    }
     const sosUserDTO : SosUserDTO = {
       id: sosUser.dataValues.id,
       user_id : user.dataValues.id,

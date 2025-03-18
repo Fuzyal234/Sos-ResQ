@@ -14,19 +14,16 @@ declare module "fastify" {
 
 export const authMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
   const authHeader = request.headers["authorization"];
-  console.log("authHeader", authHeader);
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return reply.status(401).send(errorResponse("Unauthorized", 401));
   }
 
   const token: any = authHeader.replace("Bearer ", "");
-  console.log("Token", token);
 
   try {
 
     const decoded = jwt.decode(token) as { [x: string]: any; id: any } | null;
-    console.log("Decoded token", decoded);
 
     if (!decoded || !decoded.user_id) {
       return reply.status(401).send(errorResponse("Invalid token payload.", 401));
@@ -36,14 +33,11 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
     }
 
     const sessiontoken = new session(decoded.user_id, token);
-    console.log("decodeid", decoded.user_id);
-    console.log("my token", token);
 
     if (!sessiontoken) {
       return reply.status(401).send(errorResponse("sessiontoken not found or expired.", 401));
     }
 
-    console.log("jwttoken", process.env.JWT_SECRET);
 
     jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv", (err: any) => {
       if (err) {
@@ -52,8 +46,6 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
     });
 
     request.user = decoded.user_id;
-    console.log("sessiontoken.user_id", sessiontoken.user_id);
-    console.log("request.user", request.user);
 
   } catch (error) {
     console.error("Error in authMiddleware:", error);
@@ -63,19 +55,16 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
 
 export const agentAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
   const authHeader = request.headers["authorization"];
-  console.log("authHeader", authHeader);
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return reply.status(401).send(errorResponse("Unauthorized", 401));
   }
 
   const token: any = authHeader.replace("Bearer ", "");
-  console.log("Token", token);
 
   try {
 
     const decoded = jwt.decode(token) as { [x: string]: any; id: any } | null;
-    console.log("Decoded token", decoded);
 
     if (!decoded || !decoded.user_id) {
       return reply.status(401).send(errorResponse("Invalid token payload.", 401));
@@ -85,14 +74,12 @@ export const agentAuthMiddleware = async (request: FastifyRequest, reply: Fastif
     }
 
     const sessiontoken = new session(decoded.user_id, token);
-    console.log("decodeid", decoded.user_id);
-    console.log("my token", token);
+    
 
     if (!sessiontoken) {
       return reply.status(401).send(errorResponse("sessiontoken not found or expired.", 401));
     }
 
-    console.log("jwttoken", process.env.JWT_SECRET);
 
     jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv", (err: any) => {
       if (err) {
@@ -101,8 +88,7 @@ export const agentAuthMiddleware = async (request: FastifyRequest, reply: Fastif
     });
 
     request.user = decoded.agent_id;
-    console.log("sessiontoken.user_id", sessiontoken.user_id);
-    console.log("request.user", request.user);
+    
 
   } catch (error) {
     console.error("Error in authMiddleware:", error);

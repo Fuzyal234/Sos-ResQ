@@ -6,6 +6,8 @@ import {User, Agent} from "../../models/index";
 import sequelize from "../../config/sequelize";
 import { hashPassword } from "../../utils/hash";
 import { CreateAgentDTO } from "../../types/agent.dto";
+import { Model } from "sequelize";
+
 
 export const createAgent = async (data: CreateUserDTO): Promise<Agent> => {
     const transaction = await sequelize.transaction();
@@ -39,7 +41,7 @@ export const createAgent = async (data: CreateUserDTO): Promise<Agent> => {
     }
 };
 
-export const updateAgent = async (data: CreateAgentDTO, id: string): Promise<User> => {
+export const updateAgent = async (data: CreateAgentDTO, id: string): Promise<Model> => {
     const transaction = await sequelize.transaction();
     try {
         const agent = await Agent.findOne({ where: { id: id } });

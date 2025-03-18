@@ -31,7 +31,7 @@ class SubscriptionController {
             const sos_user_id = request.user as UUID;
             const sos_user_profile = await sosUserService.getSosUserByUserId(sos_user_id);
 
-            if( sos_user_profile && sos_user_profile.is_profile_completed === false) {
+            if (sos_user_profile && sos_user_profile.is_profile_completed === false) {
                 return reply.status(400).send(errorResponse("Please complete your profile first.", 400));
             }
 
@@ -60,6 +60,9 @@ class SubscriptionController {
             // const subscriptionData = request.body as CreateSosUserSubscriptionDTO;
             const priceId = subscription?.dataValues.stripe_price_id
             const email = sos_user_profile?.email
+            if (!email) {
+                throw new Error('Email is required');
+            }
 
             const success_url = "https://google.com";
             const cancel_url = "https://apple.com";
@@ -69,7 +72,7 @@ class SubscriptionController {
             console.log('session :>> ', session.id);
             const sos_subscription = await SubscriptionService.createSosUserSubscription(subscriptionData);
             paymentService.createPayment(sos_user_id, sos_subscription.dataValues.id, subscription?.dataValues.price, session.id);
-            if(subscription?.dataValues.members_count === 1){
+            if (subscription?.dataValues.members_count === 1) {
 
                 ProtectedEntities.create({
                     entity_id: sos_user_id,
@@ -77,7 +80,7 @@ class SubscriptionController {
                     sos_user_subscription_id: sos_subscription.dataValues.id
                 })
             }
-            if(car){
+            if (car) {
 
                 ProtectedEntities.create({
                     entity_id: car.dataValues.id,
@@ -85,8 +88,8 @@ class SubscriptionController {
                     sos_user_subscription_id: sos_subscription.dataValues.id
                 })
             }
-            if(house){
-                
+            if (house) {
+
                 ProtectedEntities.create({
                     entity_id: house.dataValues.id,
                     entity_type: "house",
@@ -102,13 +105,13 @@ class SubscriptionController {
     }
 
     async stripeWebhook(request: FastifyRequest, reply: FastifyReply) {
-        const event = request.body;
+        const event = request.body as Stripe.Event;
         console.log('event :>> ', event);
-        if(event.type === "payment_intent.succeeded") {
+        if (event.type === "payment_intent.succeeded") {
             const session_id = event.data.object.id;
             await paymentService.updatePayment(session_id, "successful");
-            
-        } else if(event.type === "payment_intent.payment_failed") {
+
+        } else if (event.type === "payment_intent.payment_failed") {
             const session_id = event.data.object.id;
             await paymentService.updatePayment(session_id, "failed");
         }

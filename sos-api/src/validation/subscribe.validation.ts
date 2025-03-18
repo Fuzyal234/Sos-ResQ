@@ -69,7 +69,7 @@ const subscriptionUpdateValidationSchema = {
 const subscribeValidationSchema = {
     body: {
         type: 'object',
-        required: ['user_subscription_id', 'auto_renewal'],
+        required: ['subscription_id', 'auto_renewal'],
         properties: {
             user_subscription_id: { type: 'string' },
             auto_renewal: { type: 'boolean' },
@@ -77,11 +77,11 @@ const subscribeValidationSchema = {
         errorMessage: {
             type: 'The request body must be an object.',
             required: {
-                user_subscription_id: 'The \'user_subscription_id\' field is required.',
+                subscription_id: 'The \'subscription_id\' field is required.',
                 auto_renewal: 'The \'auto_renewal\' field is required.',
             },
             properties: {
-                user_subscription_id: 'The \'user_subscription_id\' field must be a string.',
+                subscription_id: 'The \'subscription_id\' field must be a string.',
                 auto_renewal: 'The \'auto_renewal\' field must be a boolean.',
             },
         },

@@ -23,7 +23,7 @@ export const create = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const userData = request.body as CreateUserDTO;
         const agent = await createAgent(userData);
-
+        
         return reply.status(201).send(successResponse("Agent created successfully!", agent, 201));
     } catch (error) {
         // console.error("Error creating agent:", error);

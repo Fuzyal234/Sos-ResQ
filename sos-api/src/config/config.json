@@ -1,11 +1,19 @@
 {
-  "development": {
-    "username": "admin",
-    "password": "postgres",
-    "database": "api",
-    "host": "sos-db", 
-    "dialect": "postgres",
-    "port": 5432,
-    "seedersPath": "src/seeders"   
-  }
+    "development": {
+        "username": "admin",
+        "password": "postgres",
+        "database": "api",
+        "host": "sos-db",
+        "dialect": "postgres",
+        "port": 5432,
+        "seedersPath": "src/seeders"
+    },
+    "test": {
+        "username": "test_user",
+        "password": "test_password",
+        "database": "test_db",
+        "host": "localhost",
+        "dialect": "postgres",
+        "port": 5544
+    }
 }

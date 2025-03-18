@@ -1,3 +1,5 @@
+import { number } from "joi";
+
 enum SubscriptionTier {
   TIER_1 = "1",
   TIER_2 = "2",
@@ -8,7 +10,7 @@ enum SubscriptionTier {
 
 interface CreateSubscriptionDTO {
   name: string;
-  tier: string;
+  number_of_members: number;
   includes_house: boolean;
   includes_car: boolean;
   price: number;

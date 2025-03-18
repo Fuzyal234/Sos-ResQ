@@ -1,0 +1,30 @@
+services:
+  sos-db-test:
+    image: postgres:17
+    container_name: sos-db-test
+    restart: always
+    networks:
+      - sos-db
+    ports:
+      - "5544:5432"
+    environment:
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_DB=test_db
+    volumes:
+      - ./data-postgres-test:/var/lib/postgresql/data/
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: redis-test
+    restart: always
+    networks:
+      - sos-db
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./data-redis-test:/data
+
+networks:
+  sos-db:
+    driver: bridge

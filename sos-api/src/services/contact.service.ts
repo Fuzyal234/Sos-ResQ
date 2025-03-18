@@ -6,7 +6,13 @@ class ContactService {
 
     async createContacts(contacts: CreateContactDTO[]) {
         try {
-            const newContacts = await Contact.bulkCreate(contacts);
+            const transformedContacts = contacts.map(contact => ({
+                ...contact,
+                phone: contact.phone
+            }));
+            console.log('contacts :>> ', contacts);
+            console.log('transformedContacts :>> ', transformedContacts);
+            const newContacts = await Contact.bulkCreate(transformedContacts);
             if(newContacts){
                 const sos_user = await SosUser.findByPk(contacts[0].sos_user_id);
                 if(sos_user){

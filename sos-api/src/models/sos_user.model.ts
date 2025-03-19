@@ -1,20 +1,24 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import User from "./user.model";
 import { Payment } from "./payment.model";
 import SosUserSubscription from "./sos_user_subscription.model";
 
-class SosUser extends Model {
-  public id!: string;
-  public user_id!: string;
-  public address!: string;
-  public avatar_url!: string;
-  public is_profile_completed!: boolean;
-  public contact_added!: boolean;
-
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+interface SosUserAttributes {
+  id: string;
+  user_id: string;
+  address?: string;
+  avatar_url?: string;
+  is_profile_completed?: boolean;
+  contact_added?: boolean;
+  created_at?: Date;
+  updated_at?: Date;
 }
+
+// Define creation attributes (fields optional during creation, like `id`)
+interface SosUserCreationAttributes extends Optional<SosUserAttributes, "id"> { }
+
+class SosUser extends Model<SosUserAttributes, SosUserCreationAttributes> { }
 
 SosUser.init(
   {

@@ -1,15 +1,18 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
 
-class House extends Model {
-    public id!: string;
-    public sos_user_id!: string;
-    public address!: string;
-    
-    public readonly created_at!: Date;
-    public readonly updated_at!: Date;
+interface HouseAttributes {
+    id: string;
+    sos_user_id: string;
+    address: string;
+    created_at?: Date;
+    updated_at?: Date;
 }
+
+interface HouseCreationAttributes extends Optional<HouseAttributes, 'id'> { }
+
+class House extends Model<HouseAttributes, HouseCreationAttributes> { }
 
 House.init(
     {
@@ -32,7 +35,7 @@ House.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        
+
     },
     {
         sequelize: sequelizeInit,

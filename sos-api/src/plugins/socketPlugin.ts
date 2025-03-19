@@ -34,7 +34,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
 import { Server, ServerOptions } from 'socket.io'
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import socketService from '../services/socket.service'
 
 export type FastifySocketioOptions = Partial<ServerOptions> & {
@@ -62,7 +62,7 @@ const socketPlugin: FastifyPluginAsync<FastifySocketioOptions> = fp(
             return socket.emit('error', { message: 'Invalid token' });
           }
         });
-        const decoded = jwt.decode(token);
+        const decoded = jwt.decode(token) as JwtPayload
         console.log('decoded :>> ', decoded);
         if (decoded) {
           socket.data.user = decoded.user_id;

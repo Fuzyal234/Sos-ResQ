@@ -8,6 +8,7 @@ import Ajv from "ajv";
 import ajvFormats from "ajv-formats";
 import ajvErrors from "ajv-errors";
 import redisService from "../services/redis.service";
+import socketPlugin from "../plugins/socketPlugin";
 
 // Initialize fastify with a default instance
 let fastify: FastifyInstance = Fastify({ logger: true });
@@ -23,6 +24,9 @@ beforeAll(async () => {
         process.exit(1);
     }
     
+    // Register socket plugin first
+    await fastify.register(socketPlugin);
+    
     // Register routes
     fastify.register(adminRoutes);
     fastify.register(authRoutes);
@@ -37,6 +41,7 @@ afterAll(async () => {
         await fastify.close();
     }
     await redisService.close();
+    await sequelizeInit.close();
 });
 
 const ajv = new Ajv({ allErrors: true, strict: false });

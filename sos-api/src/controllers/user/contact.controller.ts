@@ -16,7 +16,6 @@ class ContactController {
         }));
 
         try {
-            console.log('contactsWithUserId :>> ', contactsWithUserId);
             const newContacts = await contactService.createContacts(contactsWithUserId);
             return reply.status(201).send(successResponse("Contacts created successfully!", newContacts, 201));
         } catch (error) {

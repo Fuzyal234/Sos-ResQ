@@ -80,6 +80,10 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
       return reply.status(404).send(errorResponse("User not found", 404));
     }
 
+    if (!user.dataValues.password) {
+      return reply.status(400).send(errorResponse("Invalid user credentials", 400));
+    }
+    
     const isPasswordValid = await argon2.verify(user.dataValues.password, password);
     if (!isPasswordValid) {
       return reply.status(400).send(errorResponse("Invalid password", 400));
@@ -91,7 +95,7 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
     }
     const payload = {
       user_id: sos_user.dataValues.id,
-      role: user.dataValues.role
+      role: user.dataValues.role || "sos_user"
     }
     const token = AuthUtils.generateAccessToken(payload);
     const refresh_token = AuthUtils.generateRefreshToken(payload);

@@ -83,7 +83,7 @@ const createUserAccountService = async (data: CreateUserAccountDTO): Promise<Sos
 class UserAuthService {
   async  handleUserLogin(user: any, reply: FastifyReply) {
     const token = await utilityService.generateToken(user.id as UUID, "sos_user");
-    const refresh_token = await AuthUtils.generateRefreshToken({ user_id: user.user_id, role: "sos_user" });
+    const refresh_token = await AuthUtils.generateRefreshToken({ user_id: user.id, role: "sos_user" });
     const sosUser = await SosUser.findOne({ where: { user_id: user.user_id } });
     if (!sosUser) {
       return reply.status(404).send(errorResponse("SOS User not found", 404));

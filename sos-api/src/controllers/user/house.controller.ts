@@ -11,10 +11,9 @@ class HouseController {
             const house = request.body as CreateHouseDTO;
     
             house.sos_user_id = sos_user_id;
-            console.log('house :>> ', house);
             const newHouse = await House.create({ ...house,  });
     
-            return successResponse("House created successfully!", newHouse, 201);
+            return reply.status(201).send(successResponse("House created successfully!", newHouse, 201));
         } catch (error) {
             console.error("Error creating house:", error);
             if (error instanceof Error) {

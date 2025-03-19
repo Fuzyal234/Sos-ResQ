@@ -1,22 +1,27 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
-class User extends Model {
-  public id!: string;
-  public first_name!: string;
-  public last_name!: string;
-  public date_of_birth!: Date;
-  public phone_number!: string;
-  public email!: string;
-  public gender!: string;
-  public role!: string;
-  public password!: string;
+import { Gender } from "../types/user";
 
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+interface UserAttributes {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: Date | null;
+  phone_number: string | null;
+  email: string;
+  gender: Gender | null;
+  role: string | null;
+  password?: string;
+
+  created_at?: Date;
+  updated_at?: Date;
 }
+interface UserCreationAttributes extends Optional<UserAttributes, "id"> { }
 
-const user = User.init(
+class User extends Model<UserAttributes, UserCreationAttributes> {}
+
+ User.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -56,7 +61,8 @@ const user = User.init(
       },
     },
     gender: {
-      type: DataTypes.ENUM("male", "female", "prefer_not_to_say"),
+      type: DataTypes.ENUM,
+      values: Object.values(Gender),
       allowNull: true,
     },
     password: {
@@ -84,4 +90,4 @@ const user = User.init(
   }
 );
 
-export default user;
+export default User;

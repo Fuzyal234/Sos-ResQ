@@ -37,7 +37,7 @@ SosUser.belongsToMany(Subscription, { through: SosUserSubscription });
 User.hasMany(session, { foreignKey: 'user_id', as: 'sessions' });
 session.belongsTo(User, { foreignKey: 'id', as: 'user' });
 
-SosUser.prototype.toJSON = function () {const values = { ...this.get() };delete values.id;return values;};
+// SosUser.prototype.toJSON = function () {const values = { ...this.get() };delete values.id;return values;};
 
 Car.belongsTo(SosUser, { foreignKey: "sos_user_id", as: "car_sos_user" });
 SosUser.hasMany(Car, { foreignKey: "sos_user_id", as: "cars" });

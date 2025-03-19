@@ -67,15 +67,14 @@ class SubscriptionService {
      * Get all subscriptions for a user
      */
     public async getAllSubscriptionsForUser(): Promise<UserSubscriptionResponseDTO[]> {
-        const subscriptions = await Subscription.findAll({ raw: true });
-        console.log("subscriptionssssss", subscriptions);
+        const subscriptions = await Subscription.findAll();
         return subscriptions.map((subscription) => ({
-            id: subscription.id,
-            name: subscription.name,
-            tier: subscription.tier as SubscriptionTier,
-            includes_house: subscription.includes_house,
-            includes_car: subscription.includes_car,
-            price: subscription.price,
+            id: subscription.dataValues.id,
+            name: subscription.dataValues.name,
+            includes_house: subscription.dataValues.includes_house,
+            includes_car: subscription.dataValues.includes_car,
+            members_count: subscription.dataValues.members_count,
+            price: subscription.dataValues.price,
         }));
     }
 
@@ -104,11 +103,11 @@ class SubscriptionService {
             status,
             auto_renewal,
         });
-        if(subscription.dataValues.members_count > "1") {
+        if(subscription.dataValues.members_count > 1) {
             ProtectedEntities.create({
                 entity_id: sos_user_id,
                 entity_type: "sos_user",
-                sos_user_subscription_id: subscription.id,
+                sos_user_subscription_id: subscription.dataValues.id,
             });
         }
 

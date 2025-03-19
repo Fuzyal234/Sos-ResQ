@@ -6,13 +6,13 @@ interface CreateUserDTO {
   password: string;
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  date_of_birth: Date;
   phone_number: string;
 }
 enum Gender {
   MALE = "male",
   FEMALE = "female",
-  OTHER = "other",
+  PREFER_NOT_TO_SAY = "prefer_not_to_say",
 }
 
 enum Relation {
@@ -52,15 +52,15 @@ interface SosUserDTO {
   id: string;
   user_id: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: Date;
-  gender: Gender;
-  phone_number: string;
-  address: string;
-  avatar_url: string;
-  is_profile_completed: boolean
-  contact_added: boolean
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: Date | null;
+  gender: Gender | null;
+  phone_number: string | null;
+  address?: string;
+  avatar_url?: string;
+  is_profile_completed?: boolean
+  contact_added?: boolean
 }
 
 interface UserAccountReturnDTO {
@@ -82,7 +82,22 @@ interface UserWithSosUser {
   'sos_user.is_profile_completed': boolean;
   'sos_user.contact_added': boolean;
 }
-
+interface SosUserWithUser {
+  id: string;
+  user_id: string;
+  address: string | null;
+  avatar_url: string | null;
+  is_profile_completed: boolean;
+  contact_added: boolean;
+  user: {
+      email: string;
+      first_name: string;
+      last_name: string;
+      date_of_birth: Date | null;
+      gender: string | null;
+      phone_number: string;
+  };
+}
 export {
   CreateUserDTO,
   CreateSosUserDTO,
@@ -92,5 +107,7 @@ export {
   CreateUserAccountDTO,
   UserAccountReturnDTO,
   FastifyInstance,
-  UserWithSosUser
+  UserWithSosUser,
+  Gender,
+  SosUserWithUser
 };

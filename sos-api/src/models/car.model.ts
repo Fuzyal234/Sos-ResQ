@@ -1,18 +1,20 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
 
-class Car extends Model {
-    public id!: string;
-    public sos_user_id!: string;
-    public make!: string;
-    public model!: string;
-    public year!: number;
-    public color!: string;
-    public license_plate!: string;
-    public readonly created_at!: Date;
-    public readonly updated_at!: Date;
+interface CarAttributes {
+    id: string;
+    sos_user_id: string;
+    make: string;
+    model: string;
+    year: number;
+    color: string;
+    license_plate: string;
+    created_at?: Date;
+    updated_at?: Date;
 }
+interface CarCreationAttributes extends Optional<CarAttributes, "id"> { }
+class Car extends Model<CarAttributes, CarCreationAttributes> { }
 
 Car.init(
     {

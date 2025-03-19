@@ -1,25 +1,25 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
 import { Payment } from "./payment.model";
 
-class Subscription extends Model {
-  public id!: string;
-  public name!: string;
-  public tier!: string;
-  public includes_house!: boolean;
-  public includes_car!: boolean;
-  public price!: number;
-  public description!: string;
-  public stripe_product_id!: string;
-  public stripe_price_id!: string;
-  
-
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+interface SubscriptionAttributes {
+  id: string;
+  name: string;
+  includes_house: boolean;
+  includes_car: boolean;
+  members_count: number;
+  price: number;
+  description: string;
+  stripe_product_id: string;
+  stripe_price_id: string;
+  created_at?: Date;
+  updated_at?: Date;
 }
+interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, "id"> { }
+class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> { }
 
-const subscription = Subscription.init(
+Subscription.init(
   {
     id: {
       type: DataTypes.UUID,

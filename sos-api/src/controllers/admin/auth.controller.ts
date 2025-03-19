@@ -16,7 +16,7 @@ export const loginAdmin = async (request: FastifyRequest, reply: FastifyReply) =
   
     try {
       const user = await User.findOne({ where: { email, role: "admin" } });
-      if (!user) {
+      if (!user || !user.dataValues.password || !user.dataValues.role) {
         return reply.status(401).send(errorResponse("Unauthorized", 401));
       }
   
@@ -38,7 +38,6 @@ export const loginAdmin = async (request: FastifyRequest, reply: FastifyReply) =
       const userProfile = {
         id: user.dataValues.id,
         email: user.dataValues.email,
-        select_region:user.dataValues.select_region,
         first_name:user.dataValues.first_name,
         last_name:user.dataValues.last_name,
         date_of_birth:user.dataValues.date_of_birth,

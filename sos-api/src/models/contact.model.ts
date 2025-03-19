@@ -1,18 +1,20 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelizeInit from "../config/sequelize";
 import { v4 as uuidv4 } from "uuid";
 import { UUID } from "crypto";
 
-class Contact extends Model {
-    public id!: UUID;
-    public sos_user_id!: string;
-    public name!: string;
-    public phone!: string;
-    public relation!: string;
-    
-    public readonly created_at!: Date;
-    public readonly updated_at!: Date;
+interface ContactAttributes {
+    id: UUID;
+    sos_user_id: string;
+    name: string;
+    phone: string;
+    relation: string;
+
+    created_at?: Date;
+    updated_at?: Date;
 }
+interface ContactCreationAttributes extends Optional<ContactAttributes, 'id'> { }
+class Contact extends Model<ContactAttributes, ContactCreationAttributes> { }
 
 Contact.init(
     {

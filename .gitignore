@@ -4,6 +4,9 @@ logs
 npm-debug.log*
 data-postgres
 data-postgres-test
+data-redis
+data-redis-test
+coverage
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*

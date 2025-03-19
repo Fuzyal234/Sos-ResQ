@@ -2,9 +2,9 @@ import { Sequelize } from "sequelize";
 import { SosUser, User } from "../../models";
 import { Transaction } from "sequelize";
 import sequelize from "../../config/sequelize";
+import { CreateSosUserDTO, SosUserDTO, Gender, SosUserWithUser } from "../../types/user";
 
 
-import { CreateSosUserDTO, SosUserDTO } from "../../types/user";
 
 class SosUserService {
     public async getSosUserByUserId(userId: string): Promise<SosUserDTO | null> {
@@ -17,19 +17,18 @@ class SosUserService {
             return null;
         }
 
-        const plainSosUser = sosUser.get({ plain: true });
-        console.log('plainSosUser :>> ', plainSosUser);
+        const plainSosUser = sosUser.get({ plain: true }) as SosUserWithUser;
         const sosUserDTO: SosUserDTO = {
             id: plainSosUser.id,
             user_id: plainSosUser.user_id,
             email: plainSosUser.user.email,
             first_name: plainSosUser.user.first_name,
             last_name: plainSosUser.user.last_name,
-            date_of_birth: plainSosUser.user.date_of_birth,
-            gender: plainSosUser.user.gender,
+            date_of_birth: plainSosUser.user.date_of_birth || new Date(),
+            gender: (plainSosUser.user.gender as Gender) || Gender.PREFER_NOT_TO_SAY,
             phone_number: plainSosUser.user.phone_number,
-            address: plainSosUser.address,
-            avatar_url: plainSosUser.avatar_url,
+            address: plainSosUser.address || undefined,
+            avatar_url: plainSosUser.avatar_url || undefined,
             is_profile_completed: plainSosUser.is_profile_completed,
             contact_added: plainSosUser.contact_added
         };
@@ -65,22 +64,27 @@ class SosUserService {
                 where: { id: id },
                 include: [{ model: User, as: "user" }]
             });
-            const plainSosUser = sosUserM?.get({ plain: true });
+            
+            if (!sosUserM) {
+                throw new Error("SosUser not found after update");
+            }
+            
+            const plainSosUser = sosUserM.get({ plain: true }) as SosUserWithUser;
             const sosUserDTO: SosUserDTO = {
                 id: plainSosUser.id,
                 user_id: plainSosUser.user_id,
                 email: plainSosUser.user.email,
                 first_name: plainSosUser.user.first_name,
                 last_name: plainSosUser.user.last_name,
-                date_of_birth: plainSosUser.user.date_of_birth,
-                gender: plainSosUser.user.gender,
+                date_of_birth: plainSosUser.user.date_of_birth || new Date(),
+                gender: (plainSosUser.user.gender as Gender) || Gender.PREFER_NOT_TO_SAY,
                 phone_number: plainSosUser.user.phone_number,
-                address: plainSosUser.address,
-                avatar_url: plainSosUser.avatar_url,
+                address: plainSosUser.address || undefined,
+                avatar_url: plainSosUser.avatar_url || undefined,
                 is_profile_completed: plainSosUser.is_profile_completed,
                 contact_added: plainSosUser.contact_added
             };
-            return  sosUserDTO;
+            return sosUserDTO;
         } catch (error: unknown) {
             await transaction.rollback();
             throw new Error(`Failed to update SosUser: ${error as Error}.message}`);

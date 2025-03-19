@@ -10,7 +10,7 @@ enum SubscriptionTier {
 
 interface CreateSubscriptionDTO {
   name: string;
-  number_of_members: number;
+  members_count: number;
   includes_house: boolean;
   includes_car: boolean;
   price: number;
@@ -22,7 +22,7 @@ interface CreateSubscriptionDTO {
 interface UserSubscriptionResponseDTO {
   id: string;
   name: string;
-  tier: SubscriptionTier;
+  members_count: number;
   includes_house: boolean;
   includes_car: boolean;
   price: number;

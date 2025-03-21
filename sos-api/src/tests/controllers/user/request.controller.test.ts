@@ -9,7 +9,7 @@ describe('Request Controller Tests', () => {
       first_name: 'Haydar',
       last_name: 'Ali',
       email: 'haydarrequest.ali@devflovv.com',
-      phone_number: '+12344248476',
+      phone_number: '+12344248451',
       password: 'Password@123',
     });
     token = response.body.data.token;
@@ -22,7 +22,6 @@ describe('Request Controller Tests', () => {
         latitude: 80,
       })
       .set('Authorization', `Bearer ${token}`);
-    console.log('response.body :>> ', response.body);
     expect(response.status).toBe(201);
   });
 });

@@ -1,90 +1,102 @@
-import { createUser } from "../user/auth.service";
-import { CreateUserDTO } from "../../types/user";
-// import User from "../../models/user";
-// import Agent from "../../models/agent.model";
-import {User, Agent} from "../../models/index";
-import sequelize from "../../config/sequelize";
-import { hashPassword } from "../../utils/hash";
-import { CreateAgentDTO } from "../../types/agent.dto";
-import { Model } from "sequelize";
+import { CreateUserDTO } from '../../types/user';
+import { User, Agent } from '../../models/index';
+import sequelize from '../../config/sequelize';
+import { hashPassword } from '../../utils/hash';
+import { CreateAgentDTO } from '../../types/agent.dto';
+import { Model } from 'sequelize';
+import exp from 'constants';
 
+class AgentService {
+  public async getAllAgents(): Promise<Agent[]> {
+    return await Agent.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: [
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+          ],
+        },
+      ],
+    });
+  }
 
-export const createAgent = async (data: CreateUserDTO): Promise<Agent> => {
+  public async getAgentById(id: string): Promise<Agent | null> {
+    return await Agent.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: [
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+          ],
+        },
+      ],
+    });
+  }
+
+  public async createAgent(data: CreateUserDTO): Promise<Agent> {
     const transaction = await sequelize.transaction();
     const hashedPassword = await hashPassword(data.password);
 
     try {
-        const newUser = await User.create(
-            {
-                ...data,
-                role: "agent",
-                password: hashedPassword,
-            },
-            { transaction }
-        );
-        delete newUser.dataValues.password;
+      const newUser = await User.create(
+        {
+          ...data,
+          role: 'agent',
+          password: hashedPassword,
+        },
+        { transaction },
+      );
+      delete newUser.dataValues.password;
 
-        const newAgent = await Agent.create(
-            {
-                user_id: newUser.dataValues.id,
-                status: "available",
-            },
-            { transaction }
-        );
+      const newAgent = await Agent.create(
+        {
+          user_id: newUser.dataValues.id,
+          status: 'available',
+        },
+        { transaction },
+      );
 
-        await transaction.commit();
+      await transaction.commit();
 
-        return newAgent;
+      return newAgent;
     } catch (error) {
-        await transaction.rollback();
-        throw error;
+      await transaction.rollback();
+      throw error;
     }
-};
+  }
 
-export const updateAgent = async (data: CreateAgentDTO, id: string): Promise<Model> => {
+  public async updateAgent(data: CreateAgentDTO, id: string): Promise<Model> {
     const transaction = await sequelize.transaction();
     try {
-        const agent = await Agent.findOne({ where: { id: id } });
-        if (!agent) {
-            throw new Error("Agent not found");
-        }
-        const user_id = agent.dataValues.user_id;
-        const user = await User.findByPk(user_id);
-        if (!user) {
-            throw new Error("User not found");
-        }
+      const agent = await Agent.findOne({ where: { id: id } });
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
+      const user_id = agent.dataValues.user_id;
+      const user = await User.findByPk(user_id);
+      if (!user) {
+        throw new Error('User not found');
+      }
 
-        await user.update(data, { transaction });
-        await transaction.commit();
+      await user.update(data, { transaction });
+      await transaction.commit();
 
-        return user;
+      return user;
     } catch (error) {
-        await transaction.rollback();
-        throw error;
+      await transaction.rollback();
+      throw error;
     }
-};
+  }
+}
 
-export const getAgentById = async (id: string) => {
-    return await Agent.findOne({
-        where: { id },
-        include: [
-            {
-                model: User,
-                as: "user",
-                attributes: ["id", "first_name", "last_name", "email", "phone_number"],
-            },
-        ],
-    });
-};
-
-export const getAllAgents = async () => {
-    return await Agent.findAll({
-        include: [
-            {
-                model: User,
-                as: "user",
-                attributes: ["id", "first_name", "last_name", "email", "phone_number"],
-            },
-        ],
-    });
-};
+export default new AgentService();

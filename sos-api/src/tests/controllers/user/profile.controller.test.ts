@@ -11,7 +11,7 @@ describe('Profile Controller Tests', () => {
       first_name: 'Haydar',
       last_name: 'Ali',
       email: 'haydarprofile.ali@devflovv.com',
-      phone_number: '+12344248476',
+      phone_number: '+12344248469',
       password: 'Password@123',
     });
     expect(response.status).toBe(201);
@@ -35,7 +35,7 @@ describe('Profile Controller Tests', () => {
     // Make sure the directories exist
     const dir = path.dirname(testImagePath);
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, {recursive: true});
+      fs.mkdirSync(dir, { recursive: true });
     }
 
     // If test image doesn't exist, create a simple one

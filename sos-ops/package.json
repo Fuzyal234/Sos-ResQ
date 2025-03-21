@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "env-cmd -e development ./dockerstart.sh"
+    "start:dev": "env-cmd -e development ./dockerstart.sh",
+    "db:seed": "docker exec -it sos-api npx sequelize-cli db:seed:all --seeders-path ./src/seeders"
   },
   "author": "",
   "license": "ISC",

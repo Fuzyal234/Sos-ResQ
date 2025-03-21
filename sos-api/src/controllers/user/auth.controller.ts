@@ -1,24 +1,34 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { SosUser, User } from '../../models/index';
-import { session } from "../../models/session";
+import { session } from '../../models/session';
 import { successResponse, errorResponse } from '../../helper/responses';
 import { generateOTP, sendOTPEmail } from '../../utils/otpUtils';
 import { otpStore, sendEmail } from '../../middlewares/email';
-import { createUser, createUserAccountService } from '../../services/user/auth.service';
+import {
+  createUser,
+  createUserAccountService,
+} from '../../services/user/auth.service';
 import argon2 from 'argon2';
-import { CreateSosUserDTO, CreateUserAccountDTO, CreateUserDTO, SosUserDTO, UserAccountReturnDTO } from '../../types/user';
+import {
+  CreateSosUserDTO,
+  CreateUserAccountDTO,
+  CreateUserDTO,
+  SosUserDTO,
+  UserAccountReturnDTO,
+} from '../../types/user';
 import utilityService from '../../services/utility.service';
 import { UUID } from 'crypto';
 import sessionService from '../../services/session.service';
 import userAuthService from '../../services/user/auth.service';
 import AuthUtils from '../../utils/authUtils';
+import { Op } from 'sequelize';
 const { OAuth2Client } = require('google-auth-library');
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
+  process.env.GOOGLE_REDIRECT_URI,
 );
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 export interface LoginRequestBody {
@@ -26,24 +36,45 @@ export interface LoginRequestBody {
   password: string;
 }
 
-
-export const createUserAccount = async (request: FastifyRequest, reply: FastifyReply) => {
-
+export const createUserAccount = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   try {
     const userData = request.body as CreateUserAccountDTO;
     userData.email = userData.email.toLowerCase();
 
-    const existingUser = await User.findOne({ where: { email: userData.email } });
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { email: userData.email },
+          { phone_number: userData.phone_number },
+        ],
+      },
+    });
     if (existingUser) {
-      return reply.status(400).send(errorResponse("User with this email already exists.", 400));
+      return reply
+        .status(400)
+        .send(
+          errorResponse(
+            'User with this email or phone number already exists.',
+            400,
+          ),
+        );
     }
     const newSosUser = await createUserAccountService(userData);
     if (newSosUser) {
-      const token = AuthUtils.generateAccessToken({ user_id: newSosUser.id, role: "sos_user" });
-      const refresh_token = AuthUtils.generateRefreshToken({ user_id: newSosUser.id, role: "sos_user" })
+      const token = AuthUtils.generateAccessToken({
+        user_id: newSosUser.id,
+        role: 'sos_user',
+      });
+      const refresh_token = AuthUtils.generateRefreshToken({
+        user_id: newSosUser.id,
+        role: 'sos_user',
+      });
 
       session.upsert({ user_id: newSosUser.user_id, token, refresh_token });
-      
+
       const userProfile = {
         user_id: newSosUser.id,
         email: newSosUser.email,
@@ -52,56 +83,74 @@ export const createUserAccount = async (request: FastifyRequest, reply: FastifyR
         date_of_birth: newSosUser.date_of_birth,
         phone_number: newSosUser.phone_number,
         is_profile_completed: newSosUser.is_profile_completed,
-        contact_added: newSosUser.contact_added
+        contact_added: newSosUser.contact_added,
       };
       return reply
         .status(201)
-        .send(successResponse("Your account has been created successfully!", { token, refresh_token, user: userProfile }, 201));
+        .send(
+          successResponse(
+            'Your account has been created successfully!',
+            { token, refresh_token, user: userProfile },
+            201,
+          ),
+        );
     }
   } catch (error) {
-    console.error("Error during signup:", error);
-    return reply
-      .status(500)
-      .send(errorResponse("Something went wrong.", 500));
+    console.error('Error during signup:', error);
+    return reply.status(500).send(errorResponse('Something went wrong.', 500));
   }
 };
 
-
-export const loginUser = async (request: FastifyRequest, reply: FastifyReply) => {
-  const { email, password } = request.body as { email: string; password: string };
+export const loginUser = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { email, password } = request.body as {
+    email: string;
+    password: string;
+  };
 
   if (!email || !password) {
-    return reply.status(400).send(errorResponse("Email and password are required.", 400));
+    return reply
+      .status(400)
+      .send(errorResponse('Email and password are required.', 400));
   }
 
   try {
-    const user = await User.findOne({ where: { email, role: "sos_user" } });
+    const user = await User.findOne({ where: { email, role: 'sos_user' } });
     if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+      return reply.status(404).send(errorResponse('User not found', 404));
     }
 
     if (!user.dataValues.password) {
-      return reply.status(400).send(errorResponse("Invalid user credentials", 400));
-    }
-    
-    const isPasswordValid = await argon2.verify(user.dataValues.password, password);
-    if (!isPasswordValid) {
-      return reply.status(400).send(errorResponse("Invalid password", 400));
+      return reply
+        .status(400)
+        .send(errorResponse('Invalid user credentials', 400));
     }
 
-    const sos_user = await SosUser.findOne({ where: { user_id: user.dataValues.id } });
+    const isPasswordValid = await argon2.verify(
+      user.dataValues.password,
+      password,
+    );
+    if (!isPasswordValid) {
+      return reply.status(400).send(errorResponse('Invalid password', 400));
+    }
+
+    const sos_user = await SosUser.findOne({
+      where: { user_id: user.dataValues.id },
+    });
     if (!sos_user) {
-      return reply.status(404).send(errorResponse("SOS User not found", 404));
+      return reply.status(404).send(errorResponse('SOS User not found', 404));
     }
     const payload = {
       user_id: sos_user.dataValues.id,
-      role: user.dataValues.role || "sos_user"
-    }
+      role: user.dataValues.role || 'sos_user',
+    };
     const token = AuthUtils.generateAccessToken(payload);
     const refresh_token = AuthUtils.generateRefreshToken(payload);
 
     session.upsert({ user_id: user.dataValues.id, token, refresh_token });
-    
+
     // Stoped for now
 
     // const otpResponse = await sendOtp(request, reply);
@@ -118,98 +167,133 @@ export const loginUser = async (request: FastifyRequest, reply: FastifyReply) =>
       date_of_birth: user.dataValues.date_of_birth,
       phone_number: user.dataValues.phone_number,
       is_profile_completed: sos_user.dataValues.is_profile_completed,
-      contact_added: sos_user.dataValues.contact_added
+      contact_added: sos_user.dataValues.contact_added,
     };
     console.log('userProfile :>> ', userProfile);
     return reply
       .status(200)
-      .send(successResponse("Login successful", { token,refresh_token, user: userProfile }, 200));
-
+      .send(
+        successResponse(
+          'Login successful',
+          { token, refresh_token, user: userProfile },
+          200,
+        ),
+      );
   } catch (err) {
-    console.error("Error during login:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during login:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
 };
 
-export const refreshToken = async (request: FastifyRequest, reply: FastifyReply) => {
-
+export const refreshToken = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   try {
     const { refresh_token } = request.body as { refresh_token: string };
 
     if (!refresh_token) {
-      return reply.status(400).send(errorResponse("Refresh token is required.", 400));
+      return reply
+        .status(400)
+        .send(errorResponse('Refresh token is required.', 400));
     }
 
     const payload = AuthUtils.verifyRefreshToken(refresh_token);
 
     if (!payload) {
-      return reply.status(401).send(errorResponse("Invalid refresh token.", 401));
+      return reply
+        .status(401)
+        .send(errorResponse('Invalid refresh token.', 401));
     }
 
     const token = AuthUtils.generateAccessToken({
       user_id: payload.user_id,
-      role: payload.role
+      role: payload.role,
     });
     const new_refresh_token = AuthUtils.generateRefreshToken({
       user_id: payload.user_id,
-      role: payload.role
-    })
+      role: payload.role,
+    });
     const sos_user = await SosUser.findOne({ where: { id: payload.user_id } });
 
     if (!sos_user) {
-      return reply.status(404).send(errorResponse("SOS User not found", 404));
+      return reply.status(404).send(errorResponse('SOS User not found', 404));
     }
 
-    session.upsert({ user_id: sos_user.dataValues.user_id, token, refresh_token: new_refresh_token });
-    
+    session.upsert({
+      user_id: sos_user.dataValues.user_id,
+      token,
+      refresh_token: new_refresh_token,
+    });
+
     return reply
       .status(200)
-      .send(successResponse("Token refreshed successfully.", { token, refresh_toekn:new_refresh_token }, 200));
+      .send(
+        successResponse(
+          'Token refreshed successfully.',
+          { token, refresh_toekn: new_refresh_token },
+          200,
+        ),
+      );
   } catch (err) {
-    console.error("Error during refresh token:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during refresh token:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
-}
+};
 
 export const sendOtp = async (request: FastifyRequest, reply: FastifyReply) => {
   const { email } = request.body as { email: string };
 
   if (!email) {
-    return reply.status(400).send(errorResponse("Email is required for OTP.", 400));
+    return reply
+      .status(400)
+      .send(errorResponse('Email is required for OTP.', 400));
   }
 
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+      return reply.status(404).send(errorResponse('User not found', 404));
     }
 
     const otp = generateOTP();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
     otpStore[email] = { otp, expiresAt };
-    console.log("OTP Store:", otpStore);
+    console.log('OTP Store:', otpStore);
 
-    await sendEmail(email, "Your Login OTP", `<p>Your OTP is: <b>${otp}</b></p>`);
-    return { statusCode: 200, body: successResponse("OTP sent successfully. Please verify.", null, 200) };
+    await sendEmail(
+      email,
+      'Your Login OTP',
+      `<p>Your OTP is: <b>${otp}</b></p>`,
+    );
+    return {
+      statusCode: 200,
+      body: successResponse('OTP sent successfully. Please verify.', null, 200),
+    };
   } catch (err) {
-    console.error("Error during OTP sending:", err);
-    return { statusCode: 500, body: errorResponse("Internal server error", 500) };
+    console.error('Error during OTP sending:', err);
+    return {
+      statusCode: 500,
+      body: errorResponse('Internal server error', 500),
+    };
   }
 };
 
-export const forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
-
+export const forgotPassword = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   try {
-    const { email } = request.body as { email: string; };
+    const { email } = request.body as { email: string };
 
     if (!email) {
-      return reply.status(400).send(errorResponse("Email is required.", 400));
+      return reply.status(400).send(errorResponse('Email is required.', 400));
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+      return reply.status(404).send(errorResponse('User not found', 404));
     }
 
     const otp = await generateOTP();
@@ -221,42 +305,50 @@ export const forgotPassword = async (request: FastifyRequest, reply: FastifyRepl
 
     return reply
       .status(200)
-      .send(successResponse("OTP sent successfully. Please verify.", null, 200));
+      .send(
+        successResponse('OTP sent successfully. Please verify.', null, 200),
+      );
   } catch (err) {
-    console.error("Error during password reset:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during password reset:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
-}
+};
 
 const verifiedUsers = new Map<string, boolean>();
 
-export const verifyOtp = async (request: FastifyRequest, reply: FastifyReply) => {
-
+export const verifyOtp = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { email, otp } = request.body as { email: string; otp: string };
 
   if (!email || !otp) {
-    return reply.status(400).send(errorResponse("Email and OTP are required", 400));
+    return reply
+      .status(400)
+      .send(errorResponse('Email and OTP are required', 400));
   }
 
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+      return reply.status(404).send(errorResponse('User not found', 404));
     }
 
     const storedOtpData = otpStore[email];
     if (!storedOtpData) {
-      return reply.status(400).send(errorResponse("OTP not generated or expired", 400));
+      return reply
+        .status(400)
+        .send(errorResponse('OTP not generated or expired', 400));
     }
 
     const { otp: storedOtp, expiresAt } = storedOtpData;
     if (Date.now() > expiresAt) {
       delete otpStore[email];
-      return reply.status(400).send(errorResponse("OTP has expired", 400));
+      return reply.status(400).send(errorResponse('OTP has expired', 400));
     }
 
     if (otp !== storedOtp) {
-      return reply.status(400).send(errorResponse("Invalid OTP", 400));
+      return reply.status(400).send(errorResponse('Invalid OTP', 400));
     }
 
     delete otpStore[email];
@@ -264,28 +356,43 @@ export const verifyOtp = async (request: FastifyRequest, reply: FastifyReply) =>
 
     return reply
       .status(200)
-      .send(successResponse("OTP verified successfully. Login successful.", {}, 200));
+      .send(
+        successResponse(
+          'OTP verified successfully. Login successful.',
+          {},
+          200,
+        ),
+      );
   } catch (err) {
-    console.error("Error during OTP verification:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during OTP verification:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
 };
 
-export const resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
-
+export const resetPassword = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   try {
-    const { email, password } = request.body as { email: string; password: string };
+    const { email, password } = request.body as {
+      email: string;
+      password: string;
+    };
 
     if (!email || !password) {
-      return reply.status(400).send(errorResponse("Email and password are required.", 400));
+      return reply
+        .status(400)
+        .send(errorResponse('Email and password are required.', 400));
     }
     if (!verifiedUsers.get(email)) {
-      return reply.status(403).send(errorResponse("Email is not verified. Verify OTP first.", 403));
+      return reply
+        .status(403)
+        .send(errorResponse('Email is not verified. Verify OTP first.', 403));
     }
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return reply.status(404).send(errorResponse("User not found", 404));
+      return reply.status(404).send(errorResponse('User not found', 404));
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -294,23 +401,26 @@ export const resetPassword = async (request: FastifyRequest, reply: FastifyReply
 
     return reply
       .status(200)
-      .send(successResponse("Password reset successful.", null, 200));
+      .send(successResponse('Password reset successful.', null, 200));
   } catch (err) {
-    console.error("Error during password reset:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during password reset:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
-}
+};
 
-export async function googleAuthCallback(request: FastifyRequest, reply: FastifyReply) {
+export async function googleAuthCallback(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     const { google_auth_token } = request.body as { google_auth_token: string };
     if (!google_auth_token) {
-      return reply.status(400).send(errorResponse("Invalid code", 400));
+      return reply.status(400).send(errorResponse('Invalid code', 400));
     }
 
     const payload = await utilityService.verifyGoogleToken(google_auth_token);
     if (!payload) {
-      return reply.status(400).send(errorResponse("Invalid email", 400));
+      return reply.status(400).send(errorResponse('Invalid email', 400));
     }
 
     const { email, sub: google_user_id } = payload;
@@ -319,27 +429,30 @@ export async function googleAuthCallback(request: FastifyRequest, reply: Fastify
     if (user) {
       userDto = await userAuthService.getSosUserDTO(user);
     } else {
-      userDto = await userAuthService.createUserFromGoogle(payload, google_user_id);
+      userDto = await userAuthService.createUserFromGoogle(
+        payload,
+        google_user_id,
+      );
     }
     console.log('user ___:>> ', user);
     return await userAuthService.handleUserLogin(userDto, reply);
   } catch (err) {
-    console.error("Error during Google authentication:", err);
-    return reply.status(500).send(errorResponse("Internal server error", 500));
+    console.error('Error during Google authentication:', err);
+    return reply.status(500).send(errorResponse('Internal server error', 500));
   }
 }
-export async function logoutUser(token: string): Promise<{ success: boolean; error?: string }> {
+export async function logoutUser(
+  token: string,
+): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log("Received token:", token);
+    console.log('Received token:', token);
 
     await session.destroy({ where: { token } });
 
-    console.log("Session deleted successfully for token:", token);
+    console.log('Session deleted successfully for token:', token);
     return { success: true };
   } catch (error) {
-    console.error("Error during logout:", error);
-    return { success: false, error: "Invalid or expired token." };
+    console.error('Error during logout:', error);
+    return { success: false, error: 'Invalid or expired token.' };
   }
 }
-
-

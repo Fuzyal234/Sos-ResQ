@@ -1,9 +1,9 @@
 import supertest from 'supertest';
 import fastify from '../../globalTestSetup';
 import SubscriptionService from '../../../services/admin/subscription.service';
-import {CreateSubscriptionDTO} from '../../../types/subscription.dto';
-import {Subscription} from '../../../models/subscription.model';
-import {SosUser} from '../../../models';
+import { CreateSubscriptionDTO } from '../../../types/subscription.dto';
+import { Subscription } from '../../../models/subscription.model';
+import { Car, SosUser } from '../../../models';
 
 // Mock the stripe service
 jest.mock('../../../services/stripe.service', () => ({
@@ -20,11 +20,12 @@ jest.mock('../../../services/stripe.service', () => ({
 
 let token = '';
 let subscription_id = '';
+let subscription_id_2 = '';
 let completeProfileToken = '';
 
 describe('Subscription Controller 404 Test', () => {
   beforeAll(async () => {
-    await Subscription.destroy({where: {}, force: true});
+    await Subscription.destroy({ where: {}, force: true });
 
     const response = await supertest(fastify.server).post('/signup').send({
       first_name: 'Haydar',
@@ -51,7 +52,7 @@ describe('Subscription Controller Tests', () => {
       first_name: 'Haydar',
       last_name: 'Ali',
       email: 'haydarsubscription.ali@devflovv.com',
-      phone_number: '+12344248476',
+      phone_number: '+12344248452',
       password: 'Password@123',
     });
     expect(response.status).toBe(201);
@@ -71,8 +72,8 @@ describe('Subscription Controller Tests', () => {
 
     const userProfile = completeProfileResponse.body.data.user;
     await SosUser.update(
-      {is_profile_completed: true},
-      {where: {id: userProfile.user_id}},
+      { is_profile_completed: true },
+      { where: { id: userProfile.user_id } },
     );
 
     const subscriptionData: CreateSubscriptionDTO = {
@@ -135,5 +136,56 @@ describe('Subscription Controller Tests', () => {
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('You have subscribed successfully!');
     expect(response.body.data.sessionId).toBe('test_session_id_1234');
+  });
+
+  describe('POST /webhook', () => {
+    test('Should return 200', async () => {
+      const response = await supertest(fastify.server)
+        .post('/webhook')
+        .send({
+          type: 'pyment_intent.succeeded',
+          data: {
+            object: {
+              id: 'pi_123',
+              status: 'requires_action',
+              payment_method: 'pm_123',
+            },
+          },
+        });
+      expect(response.status).toBe(200);
+    });
+
+    test('Should return 200', async () => {
+      const response = await supertest(fastify.server)
+        .post('/webhook')
+        .send({
+          type: 'pyment_intent.payment_failed',
+          data: {
+            object: {
+              id: 'pi_123',
+              status: 'requires_action',
+              payment_method: 'pm_123',
+            },
+          },
+        });
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe('GET /user/subscriptions', () => {
+    beforeAll(async () => {
+      jest
+        .spyOn(SubscriptionService, 'getAllSubscriptionsForUser')
+        .mockImplementation(() => {
+          return Promise.resolve([]);
+        });
+    });
+
+    test('Should return 500', async () => {
+      const response = await supertest(fastify.server)
+        .get('/user/subscriptions')
+        .set('Authorization', `Bearer ${completeProfileToken}`);
+      expect(response.status).toBe(404);
+    });
   });
 });

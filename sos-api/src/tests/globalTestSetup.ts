@@ -9,6 +9,7 @@ import ajvFormats from "ajv-formats";
 import ajvErrors from "ajv-errors";
 import redisService from "../services/redis.service";
 import socketPlugin from "../plugins/socketPlugin";
+import fastifyMultipart from "@fastify/multipart";
 
 // Initialize fastify with a default instance
 let fastify: FastifyInstance = Fastify({ logger: true });
@@ -23,16 +24,24 @@ beforeAll(async () => {
         console.error("❌ Unable to connect to the database:", error);
         process.exit(1);
     }
-    
+
     // Register socket plugin first
     await fastify.register(socketPlugin);
-    
+
+    // Register multipart plugin for file uploads
+    await fastify.register(fastifyMultipart, {
+        limits: {
+            fileSize: 10 * 1024 * 1024,
+        },
+        attachFieldsToBody: true,
+    });
+
     // Register routes
     fastify.register(adminRoutes);
     fastify.register(authRoutes);
     fastify.register(userAuthRoutes);
     fastify.register(userRoutes);
-    
+
     await fastify.ready();
 });
 
@@ -49,7 +58,9 @@ ajvFormats(ajv);
 ajvErrors(ajv);
 
 if (fastify) {
-    fastify.setValidatorCompiler(({ schema }: { schema: any }) => ajv.compile(schema));
+    fastify.setValidatorCompiler(({ schema }: { schema: any }) =>
+        ajv.compile(schema)
+    );
     fastify.setErrorHandler((error: any, request: any, reply: any) => {
         if (error.validation) {
             const errors = error.validation.flatMap((e: any) => {

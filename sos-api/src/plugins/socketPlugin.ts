@@ -1,97 +1,92 @@
-// import { FastifyPluginAsync } from 'fastify';
-// import { Server as SocketIOServer } from 'socket.io';
-
-// const socketPlugin: FastifyPluginAsync = async (fastify) => {
-//     const io = new SocketIOServer(fastify.server, {
-//         cors: {
-//             origin: '*', // Allow all origins, change as needed
-//             methods: ['GET', 'POST'],
-//         },
-//     });
-//     // Decorate Fastify with Socket.IO instance
-
-//     fastify.decorate('io', io);
-//     fastify.io.emit('user', 'hello');
-
-//     fastify.io.on('connection', (socket) => {
-//         console.log(`Client connected: ${socket.id}`);
-
-//         socket.on('message', (data) => {
-//             console.log(`Received message from ${socket.id}:`, data);
-//             socket.broadcast.emit('message', data);
-//         });
-
-//         socket.on('disconnect', () => {
-//             console.log(`Client disconnected: ${socket.id}`);
-//         });
-//     });
-
-// };
-
-// export default socketPlugin;
-
-
-import { FastifyInstance, FastifyPluginAsync } from 'fastify'
-import fp from 'fastify-plugin'
-import { Server, ServerOptions } from 'socket.io'
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import socketService from '../services/socket.service'
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
+import { Server, ServerOptions } from 'socket.io';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import socketService from '../services/socket.service';
+import redisService from '../services/redis.service';
 
 export type FastifySocketioOptions = Partial<ServerOptions> & {
-  preClose?: (done: Function) => void
-}
+  preClose?: (done: Function) => void;
+};
 
 const socketPlugin: FastifyPluginAsync<FastifySocketioOptions> = fp(
   async function (fastify, opts: FastifySocketioOptions) {
     function defaultPreClose(done: Function) {
-      (fastify as any).io.local.disconnectSockets(true)
-      done()
+      (fastify as any).io.local.disconnectSockets(true);
+      done();
     }
 
-    fastify.decorate('io', new Server(fastify.server, opts))
+    fastify.decorate('io', new Server(fastify.server, opts));
 
-    fastify.io.on('connection', (socket) => {
-
-      console.log(`Client connected: ${socket.id}`)
+    fastify.io.on('connection', async socket => {
+      console.log(`Client connected: ${socket.id}`);
 
       const token = socket.handshake.headers.authorization?.split(' ')[1];
       console.log('token :>> ', token);
       if (token) {
-        jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv", (err: any) => {
-          if (err) {
-            return socket.emit('error', { message: 'Invalid token' });
-          }
-        });
-        const decoded = jwt.decode(token) as JwtPayload
+        jwt.verify(
+          token,
+          process.env.JWT_SECRET || 'devflovvdevflovvdevflovv',
+          (err: any) => {
+            if (err) {
+              socket.disconnect(true);
+              return socket.emit('error', { message: 'Invalid token' });
+            }
+          },
+        );
+        const decoded = jwt.decode(token) as JwtPayload;
         console.log('decoded :>> ', decoded);
         if (decoded) {
           socket.data.user = decoded.user_id;
           socket.data.role = decoded.role;
         }
 
-        socketService.registerSocketEvents(socket, fastify.io)
+        socketService.registerSocketEvents(socket, fastify.io);
+        if (socket.data.role === 'sos_user') {
+          console.log(
+            'saving the user socket in redis',
+            socket.data.user,
+            socket.id,
+          );
+          redisService.setUserSocket(socket.data.user, socket.id);
+          const room = await redisService.getUserRoom(socket.data.user);
+          console.log('room :>> ', room);
+          if (room) {
+            socket.join(room);
+          }
+        }
 
         if (socket.data.role === 'agent') {
+          console.log(
+            'saving the agent socket in redis',
+            socket.data.user,
+            socket.id,
+          );
           socket.join('room_agent_notifications');
+          redisService.setAgentSocket(socket.data.user, socket.id);
+          const room = await redisService.getAgentRoom(socket.data.user);
+          console.log('room :>> ', room);
+          if (room) {
+            socket.join(room);
+          }
         }
       }
-
-    })
+    });
     // fastify.io.on("message", (data) => {
     //   console.log(`Received message from ):`, data);
     //   fastify.io.emit('message', data);
     // });
-    fastify.addHook('preClose', (done) => {
+    fastify.addHook('preClose', done => {
       if (opts.preClose) {
-        return opts.preClose(done)
+        return opts.preClose(done);
       }
-      return defaultPreClose(done)
-    })
+      return defaultPreClose(done);
+    });
     fastify.addHook('onClose', (fastify: FastifyInstance, done) => {
-      (fastify as any).io.close()
-      done()
-    })
+      (fastify as any).io.close();
+      done();
+    });
   },
-)
+);
 
-export default socketPlugin
+export default socketPlugin;

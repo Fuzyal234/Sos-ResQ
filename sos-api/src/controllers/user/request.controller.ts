@@ -44,9 +44,14 @@ class RequestController {
       .to('room_agent_notifications')
       .emit('sos_request_notification', { room_id, sos_user_id });
 
-    sockets.forEach(sock => {
-      if (sock.data.user === sos_user_id) {
-        sock.join(room_id);
+    redisService.setUserRoom(sos_user_id, room_id);
+    redisService.getUserSocket(sos_user_id).then(socketId => {
+      if (socketId) {
+        console.log('socketId :>>>>>> in the request controller ', socketId);
+        const socket = fastify.io.sockets.sockets.get(socketId);
+        if (socket) {
+          socket.join(room_id);
+        }
       }
     });
 

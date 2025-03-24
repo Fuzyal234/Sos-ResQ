@@ -12,6 +12,7 @@ import { userSockets } from '../routes/user/user.routes';
 import { agentSockets } from '../routes/agent/agent.routes';
 import { Server, Socket } from 'socket.io';
 import { time, timeStamp } from 'console';
+import redisService from './redis.service';
 
 class SocketService {
   /**
@@ -74,25 +75,56 @@ class SocketService {
       io.emit('message', data);
     });
 
-    socket.on('send_message', data => {
-      const { room_id, sender_id, message } = JSON.parse(data) as {
-        room_id: string;
-        sender_id: string;
-        message: string;
-      }; // data
-      const members = io.sockets.adapter.rooms.get(room_id);
+    socket.on('send_message', async data => {
+      const { sender_id, message } = JSON.parse(data);
+      const { user, role } = socket.data;
 
-      if (members?.has(socket.id)) {
-        socket
-          .to(room_id)
-          .emit('receive_message', {
-            sender: socket.data.role,
-            message,
-            timeStamp: Date.now(),
-          });
-      }
+      if (!message || !sender_id || !user) return;
+
+      const room_id =
+        role === 'agent'
+          ? await redisService.getAgentRoom(user)
+          : await redisService.getUserRoom(user);
+
+      if (!room_id) return;
+
+      const members = io.sockets.adapter.rooms.get(room_id);
+      if (!members || !members.has(socket.id)) return;
+
+      socket.to(room_id).emit('receive_message', {
+        sender: role,
+        message,
+        timeStamp: Date.now(),
+      });
     });
 
+    socket.on('end_chat', async data => {
+      if (socket.data.role === 'agent') {
+        console.log('end chat triggered by agent');
+        redisService.getAgentRoom(socket.data.user).then(room_id => {
+          if (room_id) {
+            socket.to(room_id).emit('agent_left', {
+              timeStamp: Date.now(),
+            });
+            socket.leave(room_id);
+          }
+          redisService.removeAgentRoom(socket.data.user);
+        });
+      }
+
+      if (socket.data.role === 'sos_user') {
+        console.log('end chat triggered by sos user');
+        redisService.getUserRoom(socket.data.user).then(room_id => {
+          if (room_id) {
+            socket.to(room_id).emit('user_left', {
+              timeStamp: Date.now(),
+            });
+            socket.leave(room_id);
+          }
+          redisService.removeUserRoom(socket.data.user);
+        });
+      }
+    });
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.id}`);
     });
@@ -106,6 +138,7 @@ class SocketService {
         const members_set = io.sockets.adapter.rooms.get(room_id);
 
         if (members_set && members_set.size < 2) {
+          redisService.setAgentRoom(socket.data.user, room_id);
           socket.join(room_id);
           socket.to(room_id).emit('connected_to_sos_user', room_id);
           socket

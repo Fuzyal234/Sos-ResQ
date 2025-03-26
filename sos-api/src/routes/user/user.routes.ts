@@ -24,6 +24,7 @@ import {
   contactCreateValidationSchema,
   contactUpdateValidationSchema,
 } from '../../validation/contact.validation';
+import chatController from '../../controllers/user/chat.controller';
 
 export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({
@@ -127,6 +128,12 @@ export default async function userRoutes(fastify: FastifyInstance) {
     schema: houseCreateValidationSchema,
     preHandler: authMiddleware,
     handler: houseController.create,
+  });
+  fastify.route({
+    method: 'GET',
+    url: '/user/chat-history',
+    preHandler: authMiddleware,
+    handler: chatController.getChatHistory,
   });
 
   fastify.get(

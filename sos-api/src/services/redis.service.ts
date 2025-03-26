@@ -152,7 +152,60 @@ class RedisService {
   public async removeAgentSocket(agentId: string): Promise<void> {
     await this.connection.del(`agent_socket:${agentId}`);
   }
+
+  /**
+   * Save a chat message to Redis
+   * @param roomId The chat room ID
+   * @param message The message object containing sender, content, and timestamp
+   */
+  public async saveChatMessage(
+    roomId: string,
+    message: {
+      sender: string;
+      content: string;
+      timestamp: number;
+    },
+  ): Promise<void> {
+    const messageKey = `chat:${roomId}`;
+    await this.connection.rpush(messageKey, JSON.stringify(message));
+  }
+
+  /**
+   * Get chat history for a room with pagination
+   * @param roomId The chat room ID
+   * @param page The page number (1-based)
+   * @param limit Number of messages per page
+   */
+  public async getChatHistory(
+    roomId: string,
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<Array<{ sender: string; content: string; timestamp: number }>> {
+    const messageKey = `chat:${roomId}`;
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
+
+    const messages = await this.connection.lrange(messageKey, start, end);
+    return messages.map((msg: string) => JSON.parse(msg));
+  }
+
+  /**
+   * Get total number of messages in a chat room
+   * @param roomId The chat room ID
+   */
+  public async getChatMessageCount(roomId: string): Promise<number> {
+    const messageKey = `chat:${roomId}`;
+    return await this.connection.llen(messageKey);
+  }
+
+  /**
+   * Clear chat history for a room
+   * @param roomId The chat room ID
+   */
+  public async clearChatHistory(roomId: string): Promise<void> {
+    const messageKey = `chat:${roomId}`;
+    await this.connection.del(messageKey);
+  }
 }
 
-// Export a singleton instance
 export default RedisService.getInstance();

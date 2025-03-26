@@ -15,7 +15,7 @@ import socketPlugin from './plugins/socketPlugin';
 import Ajv from 'ajv';
 import ajvFormats from 'ajv-formats';
 import { fastifySchedule } from '@fastify/schedule';
-import job from './crons/subscription_status_updater.cron';
+import job from './crons/subscriptionStatusUpdater.cron';
 
 // const fastify = Fastify({
 //   ajv: {

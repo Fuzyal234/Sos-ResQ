@@ -98,11 +98,29 @@ class SocketService {
       const members = io.sockets.adapter.rooms.get(room_id);
       if (!members || !members.has(socket.id)) return;
 
+      // Save message to Redis
+      await redisService.saveChatMessage(room_id, {
+        sender: role,
+        content: message,
+        timestamp: Date.now(),
+      });
+
       socket.to(room_id).emit('receive_message', {
         sender: role,
         message,
         timeStamp: Date.now(),
       });
+    });
+
+    socket.on('get_chat_history', async data => {
+      const { user, role } = socket.data;
+      const room_id =
+        role === 'agent'
+          ? await redisService.getAgentRoom(user)
+          : await redisService.getUserRoom(user);
+      const messages = await redisService.getChatHistory(room_id as string);
+      console.log('messages :>> ', messages);
+      socket.emit('chat_history', messages);
     });
 
     socket.on('end_chat', async data => {
@@ -115,6 +133,7 @@ class SocketService {
             });
             socket.leave(room_id);
           }
+          redisService.clearChatHistory(room_id as string);
           redisService.removeAgentRoom(socket.data.user);
         });
       }

@@ -1,5 +1,5 @@
-import { OAuth2Namespace } from "@fastify/oauth2";
-import { OAuth2 } from "nodemailer/lib/smtp-connection";
+import { OAuth2Namespace } from '@fastify/oauth2';
+import { OAuth2 } from 'nodemailer/lib/smtp-connection';
 
 interface CreateUserDTO {
   email: string;
@@ -10,43 +10,43 @@ interface CreateUserDTO {
   phone_number: string;
 }
 enum Gender {
-  MALE = "male",
-  FEMALE = "female",
-  PREFER_NOT_TO_SAY = "prefer_not_to_say",
+  MALE = 'male',
+  FEMALE = 'female',
+  PREFER_NOT_TO_SAY = 'prefer_not_to_say',
 }
 
 enum Relation {
-  PARENT = "parent",
-  SPOUSE = "spouse",
-  CHILD = "child",
-  SIBLING = "sibling",
-  FRIEND = "friend",
-  OTHER = "other",
+  PARENT = 'parent',
+  SPOUSE = 'spouse',
+  CHILD = 'child',
+  SIBLING = 'sibling',
+  FRIEND = 'friend',
+  OTHER = 'other',
 }
 interface CreateUserAccountDTO {
-  email: string
-  password: string
-  phone_number: string
+  email: string;
+  password: string;
+  phone_number: string;
 }
 interface CreateSosUserDTO {
   full_name: string;
   gender: Gender;
-  date_of_birth: Date
+  date_of_birth: Date;
   address: string;
   avatar_url: Buffer;
 }
 interface CreateContactDTO {
-  sos_user_id: string
-  name: string
-  phone: string
-  relation: Relation
+  sos_user_id: string;
+  name: string;
+  phone: string;
+  relation: Relation;
 }
 interface UpdateContactDTO {
-  sos_user_id: string
-  id: string
-  name: string
-  phone_number: string
-  relation: Relation
+  sos_user_id: string;
+  id: string;
+  name: string;
+  phone_number: string;
+  relation: Relation;
 }
 
 interface SosUserDTO {
@@ -60,17 +60,17 @@ interface SosUserDTO {
   phone_number: string | null;
   address?: string;
   avatar_url?: string;
-  is_profile_completed?: boolean
-  contact_added?: boolean
+  is_profile_completed?: boolean;
+  contact_added?: boolean;
 }
 
 interface UserAccountReturnDTO {
-  email: string
-  phone_number: string
+  email: string;
+  phone_number: string;
 }
 
 interface FastifyInstance {
-  googleOauth2: OAuth2Namespace
+  googleOauth2: OAuth2Namespace;
 }
 
 interface UserWithSosUser {
@@ -91,12 +91,12 @@ interface SosUserWithUser {
   is_profile_completed: boolean;
   contact_added: boolean;
   user: {
-      email: string;
-      first_name: string;
-      last_name: string;
-      date_of_birth: Date | null;
-      gender: string | null;
-      phone_number: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    date_of_birth: Date | null;
+    gender: string | null;
+    phone_number: string;
   };
 }
 export {
@@ -110,5 +110,5 @@ export {
   FastifyInstance,
   UserWithSosUser,
   Gender,
-  SosUserWithUser
+  SosUserWithUser,
 };

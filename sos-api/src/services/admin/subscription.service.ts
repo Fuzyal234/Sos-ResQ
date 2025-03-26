@@ -129,6 +129,23 @@ class SubscriptionService {
 
     return sos_subscription;
   }
+
+  public async updateSosUserSubscriptionStatus(
+    sos_user_subscription_id: string,
+    status: string,
+    stripe_sub_id: string,
+  ): Promise<void> {
+    const updateData: any = { status };
+    if (stripe_sub_id) {
+      updateData.stripe_sub_id = stripe_sub_id;
+    }
+
+    await SosUserSubscription.update(updateData, {
+      where: {
+        id: sos_user_subscription_id,
+      },
+    });
+  }
 }
 
 export default new SubscriptionService();

@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   createUserAccount,
   logoutUser,
@@ -10,84 +10,120 @@ import {
   forgotPassword,
   googleAuthCallback,
   refreshToken,
-  
-} from "../../controllers/user/auth.controller";
-import { registerUserValidationSchema, userValidationSchemas } from "../../validation/user";
-import User from "../../models/user.model";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+} from '../../controllers/user/auth.controller';
+import {
+  registerUserValidationSchema,
+  userValidationSchemas,
+} from '../../validation/user';
+import User from '../../models/user.model';
+import { authMiddleware } from '../../middlewares/auth.middleware';
 import { successResponse, errorResponse } from '../../helper/responses';
-import joiToJsonSchema from "joi-to-json";
-
+import joiToJsonSchema from 'joi-to-json';
 
 export default async function userRoutes(fastify: FastifyInstance) {
-  fastify.route({ method: "POST", url: "/signup", schema: registerUserValidationSchema, handler: createUserAccount, });
-
-  fastify.route({ method: "POST", url: "/login", schema: { body: joiToJsonSchema(userValidationSchemas.loginUser) }, handler: loginUser, });
-  fastify.route({method: "POST", url: "/refresh-token", handler: refreshToken});
-  fastify.route({ method: "POST", url: "/send-otp", handler: sendOtp });
-  fastify.route({ method: "POST", url: "/user/verify-otp", handler: verifyOtp, });
-  fastify.route({ method: "POST", url: "/user/forgot-password", handler: forgotPassword, });
-  fastify.route({ method: "POST", url: "/user/reset-password", handler: resetPassword, });
+  fastify.route({
+    method: 'POST',
+    url: '/signup',
+    schema: registerUserValidationSchema,
+    handler: createUserAccount,
+  });
 
   fastify.route({
-    method: "POST", url: "/google-auth", schema: {
-      body:
-      {
-        type: "object",
-        required: ["google_auth_token"],
+    method: 'POST',
+    url: '/login',
+    schema: { body: joiToJsonSchema(userValidationSchemas.loginUser) },
+    handler: loginUser,
+  });
+  fastify.route({
+    method: 'POST',
+    url: '/refresh-token',
+    handler: refreshToken,
+  });
+  fastify.route({ method: 'POST', url: '/send-otp', handler: sendOtp });
+  fastify.route({
+    method: 'POST',
+    url: '/user/verify-otp',
+    handler: verifyOtp,
+  });
+  fastify.route({
+    method: 'POST',
+    url: '/user/forgot-password',
+    handler: forgotPassword,
+  });
+  fastify.route({
+    method: 'POST',
+    url: '/user/reset-password',
+    handler: resetPassword,
+  });
+
+  fastify.route({
+    method: 'POST',
+    url: '/google-auth',
+    schema: {
+      body: {
+        type: 'object',
+        required: ['google_auth_token'],
         properties: {
-          token: { type: "string" }
+          token: { type: 'string' },
         },
         errorMessage: {
-          type: "The request body must be an object.",
+          type: 'The request body must be an object.',
           required: {
-            token: "The 'google_auth_token' field is required."
+            token: "The 'google_auth_token' field is required.",
           },
           properties: {
-            token: "The 'google_auth_token' field must be a string."
-          }
-        }
-
-      }
-    }, handler: googleAuthCallback
+            token: "The 'google_auth_token' field must be a string.",
+          },
+        },
+      },
+    },
+    handler: googleAuthCallback,
   });
-// fastify.route({
-//   method: "POST",
-//   url: "apple-auth",
-//   schema: {
-//     body: {
-//       type: "object",
-//       required: ["apple_auth_token"],
-//       properties: {
-//         token: { type: "string" }
-//       },
-//       errorMessage: {
-//         type: "The request body must be an object.",
-//         required: {
-//           token: "The 'apple_auth_token' field is required."
-//         },
-//         properties: {
-//           token: "The 'apple_auth_token' field must be a string."
-//         }}
-//     }
-//   },
-//   handler: appleAuth
-// })
+  // fastify.route({
+  //   method: "POST",
+  //   url: "apple-auth",
+  //   schema: {
+  //     body: {
+  //       type: "object",
+  //       required: ["apple_auth_token"],
+  //       properties: {
+  //         token: { type: "string" }
+  //       },
+  //       errorMessage: {
+  //         type: "The request body must be an object.",
+  //         required: {
+  //           token: "The 'apple_auth_token' field is required."
+  //         },
+  //         properties: {
+  //           token: "The 'apple_auth_token' field must be a string."
+  //         }}
+  //     }
+  //   },
+  //   handler: appleAuth
+  // })
 
   fastify.route({
-    method: "DELETE", url: "/logout", preHandler: authMiddleware, handler: async (request: FastifyRequest, reply: FastifyReply) => {
+    method: 'DELETE',
+    url: '/logout',
+    preHandler: authMiddleware,
+    handler: async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const token = (request.headers["authorization"] || "").replace("Bearer ", "");
+        const token = (request.headers['authorization'] || '').replace(
+          'Bearer ',
+          '',
+        );
 
         const result = await logoutUser(token);
 
         if (result.success) {
-          return reply.status(200).send({ message: "User logged out successfully." });
+          return reply
+            .status(200)
+            .send({ message: 'User logged out successfully.' });
         }
 
         return reply.status(400).send({ error: result.error });
       } catch (error) {
-        return reply.status(500).send({ error: "Internal server error." });
+        return reply.status(500).send({ error: 'Internal server error.' });
       }
     },
   });

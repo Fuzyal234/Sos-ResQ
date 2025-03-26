@@ -6,11 +6,12 @@ import { UUID } from 'crypto';
 import Stripe from 'stripe';
 import stripe from '../../services/stripe.service';
 import stripeService from '../../services/stripe.service';
-import { Car, House } from '../../models/index';
+import { Car, House, SosUser, SosUserSubscription } from '../../models/index';
 import { ProtectedEntities } from '../../models/portected_entities.model';
 import sosUserService from '../../services/user/sosUser.service';
 import { exit } from 'process';
 import paymentService from '../../services/payment.service';
+import subscriptionService from '../../services/admin/subscription.service';
 
 class SubscriptionController {
   async index(request: FastifyRequest, reply: FastifyReply) {
@@ -79,7 +80,6 @@ class SubscriptionController {
       }
       let house;
       if (subscription?.dataValues.includes_house) {
-        console.log('INSIDE  IF  HOUSE');
         house = await House.findOne({ where: { sos_user_id } });
         if (!house) {
           return reply.status(404).send(errorResponse('House not found.', 404));
@@ -91,20 +91,15 @@ class SubscriptionController {
       if (!email) {
         throw new Error('Email is required');
       }
-
-      const success_url = 'https://google.com';
-      const cancel_url = 'https://apple.com';
+      const sos_subscription =
+        await SubscriptionService.createSosUserSubscription(subscriptionData);
 
       const session = await stripeService.createCheckoutSession(
         priceId,
         email,
-        success_url,
-        cancel_url,
+        sos_user_id,
       );
 
-      console.log('session :>> ', session.id);
-      const sos_subscription =
-        await SubscriptionService.createSosUserSubscription(subscriptionData);
       paymentService.createPayment(
         sos_user_id,
         sos_subscription.dataValues.id,
@@ -159,6 +154,41 @@ class SubscriptionController {
     } else if (event.type === 'payment_intent.payment_failed') {
       const session_id = event.data.object.id;
       await paymentService.updatePayment(session_id, 'failed');
+    } else if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object;
+      const customer_id = invoice.customer ?? '';
+      const subscriptionId = invoice.subscription ?? '';
+      const sos_user_subscription = await SosUserSubscription.findOne({
+        where: {
+          stripe_cus_id: customer_id,
+        },
+      });
+      if (typeof subscriptionId === 'string') {
+        subscriptionService.updateSosUserSubscriptionStatus(
+          sos_user_subscription?.dataValues.id,
+          subscriptionId,
+          'active',
+        );
+      } else {
+        console.error('Invalid subscription ID:', subscriptionId);
+      }
+    } else if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const subscriptionId = session.subscription ?? '';
+      const sos_user_subscription = await SosUserSubscription.findOne({
+        where: {
+          stripe_cus_id: session.customer,
+        },
+      });
+      if (typeof subscriptionId === 'string') {
+        subscriptionService.updateSosUserSubscriptionStatus(
+          sos_user_subscription?.dataValues.id,
+          subscriptionId,
+          'active',
+        );
+      } else {
+        console.error('Invalid subscription ID:', subscriptionId);
+      }
     }
 
     return reply

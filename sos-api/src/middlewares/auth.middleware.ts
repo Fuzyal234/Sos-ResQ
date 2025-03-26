@@ -1,125 +1,156 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-import jwt from "jsonwebtoken";
-import { errorResponse } from "../helper/responses";
-import session from "../models/session";
+import { FastifyReply, FastifyRequest } from 'fastify';
+import jwt from 'jsonwebtoken';
+import { errorResponse } from '../helper/responses';
+import session from '../models/session';
 
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyRequest {
     user?: any;
   }
   const decoded: {
     user_id: number;
-  }
+  };
 }
 
-export const authMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
-  const authHeader = request.headers["authorization"];
+export const authMiddleware = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const authHeader = request.headers['authorization'];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return reply.status(401).send(errorResponse("Unauthorized", 401));
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return reply.status(401).send(errorResponse('Unauthorized', 401));
   }
 
-  const token: any = authHeader.replace("Bearer ", "");
+  const token: any = authHeader.replace('Bearer ', '');
 
   try {
-
     const decoded = jwt.decode(token) as { [x: string]: any; id: any } | null;
 
     if (!decoded || !decoded.user_id) {
-      return reply.status(401).send(errorResponse("Invalid token payload.", 401));
+      return reply
+        .status(401)
+        .send(errorResponse('Invalid token payload.', 401));
     }
-    if (!decoded || !decoded.user_id || decoded.role !== "sos_user") {
-      return reply.status(401).send(errorResponse("Invalid token payload.", 401));
+    if (!decoded || !decoded.user_id || decoded.role !== 'sos_user') {
+      return reply
+        .status(401)
+        .send(errorResponse('Invalid token payload.', 401));
     }
 
     const sessiontoken = new session(decoded.user_id, token);
 
     if (!sessiontoken) {
-      return reply.status(401).send(errorResponse("sessiontoken not found or expired.", 401));
+      return reply
+        .status(401)
+        .send(errorResponse('sessiontoken not found or expired.', 401));
     }
 
-
-    jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv", (err: any) => {
-      if (err) {
-        return reply.status(401).send(errorResponse("Invalid or expired token.", 401));
-      }
-    });
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'devflovvdevflovvdevflovv',
+      (err: any) => {
+        if (err) {
+          return reply
+            .status(401)
+            .send(errorResponse('Invalid or expired token.', 401));
+        }
+      },
+    );
 
     request.user = decoded.user_id;
-
   } catch (error) {
-    console.error("Error in authMiddleware:", error);
-    return reply.status(500).send(errorResponse("Internal Server Error", 500));
+    console.error('Error in authMiddleware:', error);
+    return reply.status(500).send(errorResponse('Internal Server Error', 500));
   }
 };
 
-export const agentAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
-  const authHeader = request.headers["authorization"];
+export const agentAuthMiddleware = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const authHeader = request.headers['authorization'];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return reply.status(401).send(errorResponse("Unauthorized", 401));
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return reply.status(401).send(errorResponse('Unauthorized', 401));
   }
 
-  const token: any = authHeader.replace("Bearer ", "");
+  const token: any = authHeader.replace('Bearer ', '');
 
   try {
-
     const decoded = jwt.decode(token) as { [x: string]: any; id: any } | null;
 
     if (!decoded || !decoded.user_id) {
-      return reply.status(401).send(errorResponse("Invalid token payload.", 401));
+      return reply
+        .status(401)
+        .send(errorResponse('Invalid token payload.', 401));
     }
-    if (!decoded || !decoded.user_id || decoded.role !== "agent") {
-      return reply.status(401).send(errorResponse("Invalid token payload.", 401));
+    if (!decoded || !decoded.user_id || decoded.role !== 'agent') {
+      return reply
+        .status(401)
+        .send(errorResponse('Invalid token payload.', 401));
     }
 
     const sessiontoken = new session(decoded.user_id, token);
-    
 
     if (!sessiontoken) {
-      return reply.status(401).send(errorResponse("sessiontoken not found or expired.", 401));
+      return reply
+        .status(401)
+        .send(errorResponse('sessiontoken not found or expired.', 401));
     }
 
-
-    jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv", (err: any) => {
-      if (err) {
-        return reply.status(401).send(errorResponse("Invalid or expired token.", 401));
-      }
-    });
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'devflovvdevflovvdevflovv',
+      (err: any) => {
+        if (err) {
+          return reply
+            .status(401)
+            .send(errorResponse('Invalid or expired token.', 401));
+        }
+      },
+    );
 
     request.user = decoded.agent_id;
-    
-
   } catch (error) {
-    console.error("Error in authMiddleware:", error);
-    return reply.status(500).send(errorResponse("Internal Server Error", 500));
+    console.error('Error in authMiddleware:', error);
+    return reply.status(500).send(errorResponse('Internal Server Error', 500));
   }
 };
 
-export const adminAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
-  const authHeader = request.headers["authorization"];
+export const adminAuthMiddleware = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const authHeader = request.headers['authorization'];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return reply.status(401).send(errorResponse("Unauthorized", 401));
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return reply.status(401).send(errorResponse('Unauthorized', 401));
   }
 
-  const token = authHeader.replace("Bearer ", "");
+  const token = authHeader.replace('Bearer ', '');
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "devflovvdevflovvdevflovv") as {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'devflovvdevflovvdevflovv',
+    ) as {
       user_id: number;
       role: string;
     };
 
-    if (!decoded || !decoded.user_id || decoded.role !== "admin") {
-      return reply.status(403).send(errorResponse("Access denied. Admins only.", 403));
+    if (!decoded || !decoded.user_id || decoded.role !== 'admin') {
+      return reply
+        .status(403)
+        .send(errorResponse('Access denied. Admins only.', 403));
     }
 
     // Attach user info to request for further processing
     request.user = { id: decoded.user_id, role: decoded.role };
-
   } catch (error) {
-    console.error("Error in adminAuthMiddleware:", error);
-    return reply.status(401).send(errorResponse("Invalid or expired token.", 401));
+    console.error('Error in adminAuthMiddleware:', error);
+    return reply
+      .status(401)
+      .send(errorResponse('Invalid or expired token.', 401));
   }
 };

@@ -1,9 +1,9 @@
-import {FastifyInstance, FastifyReply, FastifyRequest} from 'fastify';
-import {authMiddleware} from '../../middlewares/auth.middleware';
-import {requestController} from '../../controllers/user/request.controller';
-import {UUID} from 'crypto';
-import {WebSocket} from 'ws';
-import {Agent} from '../../models';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { authMiddleware } from '../../middlewares/auth.middleware';
+import { requestController } from '../../controllers/user/request.controller';
+import { UUID } from 'crypto';
+import { WebSocket } from 'ws';
+import { Agent } from '../../models';
 
 import subscriptionController from '../../controllers/user/subscription.controller';
 import redisService from '../../services/redis.service';
@@ -12,10 +12,10 @@ import carController from '../../controllers/user/car.controller';
 import houseController from '../../controllers/user/house.controller';
 import familyController from '../../controllers/user/family.controller';
 import contactController from '../../controllers/user/contact.controller';
-import {carCreateValidationSchema} from '../../validation/car.validation';
-import {houseCreateValidationSchema} from '../../validation/house.validation';
-import {sosRequestValidationSchema} from '../../validation/sos_request.validation';
-import {subscribeValidationSchema} from '../../validation/subscribe.validation';
+import { carCreateValidationSchema } from '../../validation/car.validation';
+import { houseCreateValidationSchema } from '../../validation/house.validation';
+import { sosRequestValidationSchema } from '../../validation/sos_request.validation';
+import { subscribeValidationSchema } from '../../validation/subscribe.validation';
 import {
   confirmMemberInviteValidationSchema,
   memberInviteValidationSchema,
@@ -131,13 +131,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
   fastify.get(
     '/ws/user/chat',
-    {websocket: true, preHandler: authMiddleware},
+    { websocket: true, preHandler: authMiddleware },
     (connection, req) => {
       const userId = req.user as UUID;
       userSockets.set(userId, connection);
 
       connection.on('close', () => {
-        Agent.update({status: 'available'}, {where: {user_id: userId}});
+        Agent.update({ status: 'available' }, { where: { user_id: userId } });
         redisService.removeJobFromQueue(userId);
         userSockets.delete(userId);
       });
@@ -147,4 +147,4 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
 const userSockets = new Map<UUID, WebSocket>();
 const agentSockets = new Map<UUID, WebSocket>();
-export {requestController, userSockets, agentSockets};
+export { requestController, userSockets, agentSockets };

@@ -76,7 +76,14 @@ class SocketService {
     });
 
     socket.on('send_message', async data => {
-      const { sender_id, message } = JSON.parse(data);
+      let data_json;
+      try {
+        data_json = JSON.parse(data);
+      } catch (error) {
+        data_json = data;
+      }
+      data = data_json;
+      const { sender_id, message } = data;
       const { user, role } = socket.data;
 
       if (!message || !sender_id || !user) return;
@@ -131,7 +138,15 @@ class SocketService {
 
     if (socket.data.role === 'agent') {
       socket.on('connect_to_sos_user', async data => {
-        const { room_id, request_id } = JSON.parse(data) as {
+        let data_json;
+        try {
+          data_json = JSON.parse(data);
+        } catch (error) {
+          data_json = data;
+        }
+        data = data_json;
+
+        const { room_id, request_id } = data as {
           room_id: string;
           request_id: string;
         };

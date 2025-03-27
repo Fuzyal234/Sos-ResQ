@@ -98,16 +98,21 @@ class SocketService {
       const members = io.sockets.adapter.rooms.get(room_id);
       if (!members || !members.has(socket.id)) return;
 
+      const messageId = await this.createMessageId();
       // Save message to Redis
       await redisService.saveChatMessage(room_id, {
         sender: role,
         content: message,
         timestamp: Date.now(),
+        id: messageId,
+        readStatus: false
       });
 
       socket.to(room_id).emit('receive_message', {
+        id: messageId,
         sender: role,
         message,
+        readStatus: false,
         timeStamp: Date.now(),
       });
     });
@@ -154,6 +159,26 @@ class SocketService {
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.id}`);
     });
+    socket.on('message_read', async data => {
+      let data_json;
+      try {
+        data_json = JSON.parse(data);
+      } catch (error) {
+        data_json = data;
+      }
+      data = data_json;
+      const { sender_id, message_id } = data;
+      const { user, role } = socket.data;
+      const room_id =
+        role === 'agent'
+          ? await redisService.getAgentRoom(user)
+          : await redisService.getUserRoom(user);
+      if (!room_id) return;
+      const members = io.sockets.adapter.rooms.get(room_id);
+      if (!members || !members.has(socket.id)) return;
+      redisService.markMessageAsRead(room_id, message_id);
+      socket.to(room_id).emit('message_read', { message_id });
+    });
 
     if (socket.data.role === 'agent') {
       socket.on('connect_to_sos_user', async data => {
@@ -193,6 +218,10 @@ class SocketService {
     const room_id = `room_${sos_user_id}`;
     // activeChats[sos_user_id] = {  room_id }
     return room_id;
+  }
+
+  public async createMessageId(): Promise<string> {
+    return crypto.randomUUID();
   }
 
   public async getRoomId(sos_user_id: string): Promise<string | undefined> {

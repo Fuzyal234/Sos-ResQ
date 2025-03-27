@@ -156,7 +156,7 @@ class RedisService {
   /**
    * Save a chat message to Redis
    * @param roomId The chat room ID
-   * @param message The message object containing sender, content, and timestamp
+   * @param message The message object containing sender, content, timestamp, id and read status
    */
   public async saveChatMessage(
     roomId: string,
@@ -164,6 +164,8 @@ class RedisService {
       sender: string;
       content: string;
       timestamp: number;
+      id: string;
+      readStatus: boolean;
     },
   ): Promise<void> {
     const messageKey = `chat:${roomId}`;
@@ -180,13 +182,32 @@ class RedisService {
     roomId: string,
     page: number = 1,
     limit: number = 50,
-  ): Promise<Array<{ sender: string; content: string; timestamp: number }>> {
+  ): Promise<Array<{ sender: string; content: string; timestamp: number; id: string; readStatus: boolean }>> {
     const messageKey = `chat:${roomId}`;
     const start = (page - 1) * limit;
     const end = start + limit - 1;
 
     const messages = await this.connection.lrange(messageKey, start, end);
     return messages.map((msg: string) => JSON.parse(msg));
+  }
+
+  /**
+   * Mark a message as read in a chat room
+   * @param roomId The chat room ID
+   * @param messageId The ID of the message to mark as read
+   */
+  public async markMessageAsRead(roomId: string, messageId: string): Promise<void> {
+    const messageKey = `chat:${roomId}`;
+    const messages = await this.connection.lrange(messageKey, 0, -1);
+
+    for (let i = 0; i < messages.length; i++) {
+      const message = JSON.parse(messages[i]);
+      if (message.id === messageId) {
+        message.readStatus = true;
+        await this.connection.lset(messageKey, i, JSON.stringify(message));
+        break;
+      }
+    }
   }
 
   /**

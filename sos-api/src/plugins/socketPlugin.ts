@@ -53,6 +53,8 @@ const socketPlugin: FastifyPluginAsync<FastifySocketioOptions> = fp(
           console.log('room :>> ', room);
           if (room) {
             socket.join(room);
+            socket.emit('connected_to_sos_user', room);
+            socket.to(room).emit('connected_to_sos_user', room);
           }
         }
 

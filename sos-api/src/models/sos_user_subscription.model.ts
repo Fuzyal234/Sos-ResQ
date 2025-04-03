@@ -1,8 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
-import User from './user.model';
-import { Payment } from './payment.model';
-import SosUser from './sos_user.model';
 
 class SosUserSubscription extends Model {
   public id!: string;

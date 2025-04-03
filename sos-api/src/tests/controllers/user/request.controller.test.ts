@@ -9,9 +9,10 @@ describe('Request Controller Tests', () => {
       first_name: 'Haydar',
       last_name: 'Ali',
       email: 'haydarrequest.ali@devflovv.com',
-      phone_number: '+12344248451',
+      phone_number: '+12344288451',
       password: 'Password@123',
     });
+    console.log('response.body in request controller :>> ', response.body);
     token = response.body.data.token;
   });
   test('POST /user/requests - Should create a new request', async () => {

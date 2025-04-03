@@ -20,7 +20,7 @@ Agent.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasOne(Agent, { foreignKey: "user_id" });
 
 SosUserSubscription.belongsTo(SosUser, { as: "user_subscription_sos_user", foreignKey: "sos_user_id" });
-SosUser.hasMany(SosUserSubscription, {foreignKey: "sos_user_id",as: "subscriptions",})
+SosUser.hasMany(SosUserSubscription, { foreignKey: "sos_user_id", as: "subscriptions", })
 
 SosUserSubscription.hasMany(Payment, { as: "payments", foreignKey: "sos_user_subscription_id" });
 Payment.belongsTo(SosUserSubscription, { foreignKey: "sos_user_subscription_id", as: "sos_user_subscription", });
@@ -28,7 +28,7 @@ Payment.belongsTo(SosUserSubscription, { foreignKey: "sos_user_subscription_id",
 User.hasOne(SosUser, { foreignKey: "user_id", as: "user_sos_user" });
 SosUser.belongsTo(User, { foreignKey: "user_id", as: "user", });
 
-SosUser.hasMany(Payment, { foreignKey: "sos_user_id", as: "sos_user_payments",})
+SosUser.hasMany(Payment, { foreignKey: "sos_user_id", as: "sos_user_payments", })
 Payment.belongsTo(SosUser, { foreignKey: "sos_user_id", as: "payment_sos_user", });
 
 Subscription.belongsToMany(SosUser, { through: SosUserSubscription });

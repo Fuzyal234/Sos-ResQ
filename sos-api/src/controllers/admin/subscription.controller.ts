@@ -64,8 +64,6 @@ class SubscriptionController {
       if (error instanceof Error) {
         return reply.status(400).send(errorResponse(error.message, 400));
       }
-
-      console.error('Error creating agent:', error);
       return reply
         .status(500)
         .send(errorResponse('Internal server error.', 500));

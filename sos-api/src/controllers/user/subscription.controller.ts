@@ -42,7 +42,7 @@ class SubscriptionController {
 
   async subscribe(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const sos_user_id = request.user as UUID;
+      const sos_user_id = request.user.sos_user_id as UUID;
       const sos_user_profile = await sosUserService.getSosUserByUserId(
         sos_user_id,
       );

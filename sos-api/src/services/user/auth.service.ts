@@ -89,12 +89,14 @@ const createUserAccountService = async (
 
 class UserAuthService {
   async handleUserLogin(user: any, reply: FastifyReply) {
-    const token = await utilityService.generateToken(
-      user.id as UUID,
-      'sos_user',
-    );
+    const token = AuthUtils.generateAccessToken({
+      user_id: user.user_id,
+      sos_user_id: user.id,
+      role: 'sos_user',
+    });
     const refresh_token = await AuthUtils.generateRefreshToken({
-      user_id: user.id,
+      user_id: user.user_id,
+      sos_user_id: user.id,
       role: 'sos_user',
     });
     const sosUser = await SosUser.findOne({ where: { user_id: user.user_id } });

@@ -6,7 +6,7 @@ import redisService from '../../services/redis.service';
 class ChatController {
   async getChatHistory(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const sos_user_id = request.user as UUID;
+      const sos_user_id = request.user.sos_user_id as UUID;
       const roomId = await redisService.getUserRoom(sos_user_id);
 
       if (!roomId) {

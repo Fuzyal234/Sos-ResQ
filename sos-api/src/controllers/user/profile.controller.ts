@@ -1,15 +1,15 @@
-import {FastifyReply, FastifyRequest} from 'fastify';
-import {User} from '../../models';
-import {successResponse, errorResponse} from '../../helper/responses';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { User } from '../../models';
+import { successResponse, errorResponse } from '../../helper/responses';
 import sosUserService from '../../services/user/sosUser.service';
-import {CreateSosUserDTO, SosUserDTO} from '../../types/user';
+import { CreateSosUserDTO, SosUserDTO } from '../../types/user';
 import s3Service from '../../services/s3.service';
-import {validateProfileUpdateFields} from '../../validation/profile.validation';
-import {AppError} from '../../types/error';
+import { validateProfileUpdateFields } from '../../validation/profile.validation';
+import { AppError } from '../../types/error';
 
 class ProfileController {
   async getProfile(request: FastifyRequest, reply: FastifyReply) {
-    const userId = request.user;
+    const userId = request.user.sos_user_id;
     console.log('userId', userId);
     try {
       const userProfile: SosUserDTO | null =
@@ -43,17 +43,17 @@ class ProfileController {
       });
     }
     try {
-      const userId = request.user;
+      const userId = request.user.sos_user_id;
       const userProfile = await sosUserService.getSosUserByUserId(userId);
       if (!userProfile) {
         return reply.status(404).send(errorResponse('User not found', 404));
       }
-      const {full_name, date_of_birth, address, gender, avatar} =
+      const { full_name, date_of_birth, address, gender, avatar } =
         request.body as {
-          full_name: {value: string};
-          date_of_birth: {value: string};
-          address: {value: string};
-          gender: {value: string};
+          full_name: { value: string };
+          date_of_birth: { value: string };
+          address: { value: string };
+          gender: { value: string };
           avatar: any;
         };
 

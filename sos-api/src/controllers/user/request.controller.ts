@@ -18,7 +18,7 @@ class RequestController {
       latitude: number;
     };
     const location = `${longitude},${latitude}`;
-    const sos_user_id = request.user as UUID;
+    const sos_user_id = request.user.sos_user_id as UUID;
     const user_subscription = await SosUserSubscription.findOne({
       where: { sos_user_id, status: 'active' },
     });

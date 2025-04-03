@@ -19,6 +19,7 @@ import User from '../../models/user.model';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { successResponse, errorResponse } from '../../helper/responses';
 import joiToJsonSchema from 'joi-to-json';
+import { sosUserAuthMiddleware } from '../../middlewares/authStrategies';
 
 export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({
@@ -105,7 +106,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.route({
     method: 'DELETE',
     url: '/logout',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const token = (request.headers['authorization'] || '').replace(

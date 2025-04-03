@@ -65,11 +65,13 @@ export const createUserAccount = async (
     const newSosUser = await createUserAccountService(userData);
     if (newSosUser) {
       const token = AuthUtils.generateAccessToken({
-        user_id: newSosUser.id,
+        user_id: newSosUser.user_id,
+        sos_user_id: newSosUser.id,
         role: 'sos_user',
       });
       const refresh_token = AuthUtils.generateRefreshToken({
         user_id: newSosUser.id,
+        sos_user_id: newSosUser.id,
         role: 'sos_user',
       });
 
@@ -143,7 +145,8 @@ export const loginUser = async (
       return reply.status(404).send(errorResponse('SOS User not found', 404));
     }
     const payload = {
-      user_id: sos_user.dataValues.id,
+      user_id: user.dataValues.id,
+      sos_user_id: sos_user.dataValues.id,
       role: user.dataValues.role || 'sos_user',
     };
     const token = AuthUtils.generateAccessToken(payload);
@@ -208,13 +211,17 @@ export const refreshToken = async (
 
     const token = AuthUtils.generateAccessToken({
       user_id: payload.user_id,
+      sos_user_id: payload.sos_user_id,
       role: payload.role,
     });
     const new_refresh_token = AuthUtils.generateRefreshToken({
       user_id: payload.user_id,
+      sos_user_id: payload.sos_user_id,
       role: payload.role,
     });
-    const sos_user = await SosUser.findOne({ where: { id: payload.user_id } });
+    const sos_user = await SosUser.findOne({
+      where: { id: payload.sos_user_id },
+    });
 
     if (!sos_user) {
       return reply.status(404).send(errorResponse('SOS User not found', 404));

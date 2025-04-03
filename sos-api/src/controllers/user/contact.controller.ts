@@ -8,7 +8,7 @@ import sosUserService from '../../services/user/sosUser.service';
 class ContactController {
   async create(request: FastifyRequest, reply: FastifyReply) {
     const contacts = request.body as CreateContactDTO[];
-    const sos_user_id = request.user as UUID;
+    const sos_user_id = request.user.sos_user_id as UUID;
 
     // Assign sos_user_id to each contact
     const contactsWithUserId = contacts.map(contact => ({
@@ -56,7 +56,7 @@ class ContactController {
   }
 
   async index(request: FastifyRequest, reply: FastifyReply) {
-    const sos_user_id = request.user as UUID;
+    const sos_user_id = request.user.sos_user_id as UUID;
     try {
       const contacts = await contactService.getContactsBySosUserId(sos_user_id);
 

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { authMiddleware } from '../../middlewares/auth.middleware';
+import { sosUserAuthMiddleware } from '../../middlewares/authStrategies';
 import { requestController } from '../../controllers/user/request.controller';
 import { UUID } from 'crypto';
 import { WebSocket } from 'ws';
@@ -36,7 +36,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
     method: 'POST',
     url: '/user/subscribe',
     schema: subscribeValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: subscriptionController.subscribe,
   });
 
@@ -44,26 +44,26 @@ export default async function userRoutes(fastify: FastifyInstance) {
     method: 'POST',
     url: '/user/requests',
     schema: sosRequestValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: (req, res) => requestController.createRequest(fastify, req, res),
   });
   fastify.route({
     method: 'GET',
     url: '/user/requests',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: requestController.getQueuedJobs,
   });
 
   fastify.route({
     method: 'GET',
     url: '/user/profile',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: profileController.getProfile,
   });
   fastify.route({
     method: 'PUT',
     url: '/user/profile',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: profileController.updateProfile,
   });
 
@@ -77,41 +77,41 @@ export default async function userRoutes(fastify: FastifyInstance) {
     method: 'POST',
     url: '/user/invite',
     schema: memberInviteValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: familyController.inviteMember,
   });
   fastify.route({
     method: 'POST',
     url: '/user/accept-invite',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: familyController.acceptInvitation,
   });
   fastify.route({
     method: 'POST',
     url: '/user/confirm-invite',
     schema: confirmMemberInviteValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: familyController.confirmInvite,
   });
 
   fastify.route({
     method: 'GET',
     url: '/user/contacts',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: contactController.index,
   });
   fastify.route({
     method: 'POST',
     url: '/user/contact',
     schema: contactCreateValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: contactController.create,
   });
   fastify.route({
     method: 'PUT',
     url: '/user/contact',
     schema: contactUpdateValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: contactController.update,
   });
 
@@ -119,26 +119,26 @@ export default async function userRoutes(fastify: FastifyInstance) {
     method: 'POST',
     url: '/user/car',
     schema: carCreateValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: carController.create,
   });
   fastify.route({
     method: 'POST',
     url: '/user/house',
     schema: houseCreateValidationSchema,
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: houseController.create,
   });
   fastify.route({
     method: 'GET',
     url: '/user/chat-history',
-    preHandler: authMiddleware,
+    preHandler: sosUserAuthMiddleware,
     handler: chatController.getChatHistory,
   });
 
   fastify.get(
     '/ws/user/chat',
-    { websocket: true, preHandler: authMiddleware },
+    { websocket: true, preHandler: sosUserAuthMiddleware },
     (connection, req) => {
       const userId = req.user as UUID;
       userSockets.set(userId, connection);

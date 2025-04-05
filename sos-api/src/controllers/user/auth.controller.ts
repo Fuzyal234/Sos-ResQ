@@ -23,6 +23,7 @@ import sessionService from '../../services/session.service';
 import userAuthService from '../../services/user/auth.service';
 import AuthUtils from '../../utils/authUtils';
 import { Op } from 'sequelize';
+import { SosAuthService } from '../../services/auth/sos-auth.service';
 const { OAuth2Client } = require('google-auth-library');
 
 const oauth2Client = new OAuth2Client(
@@ -112,80 +113,8 @@ export const loginUser = async (
     password: string;
   };
 
-  if (!email || !password) {
-    return reply
-      .status(400)
-      .send(errorResponse('Email and password are required.', 400));
-  }
-
-  try {
-    const user = await User.findOne({ where: { email, role: 'sos_user' } });
-    if (!user) {
-      return reply.status(404).send(errorResponse('User not found', 404));
-    }
-
-    if (!user.dataValues.password) {
-      return reply
-        .status(400)
-        .send(errorResponse('Invalid user credentials', 400));
-    }
-
-    const isPasswordValid = await argon2.verify(
-      user.dataValues.password,
-      password,
-    );
-    if (!isPasswordValid) {
-      return reply.status(400).send(errorResponse('Invalid password', 400));
-    }
-
-    const sos_user = await SosUser.findOne({
-      where: { user_id: user.dataValues.id },
-    });
-    if (!sos_user) {
-      return reply.status(404).send(errorResponse('SOS User not found', 404));
-    }
-    const payload = {
-      user_id: user.dataValues.id,
-      sos_user_id: sos_user.dataValues.id,
-      role: user.dataValues.role || 'sos_user',
-    };
-    const token = AuthUtils.generateAccessToken(payload);
-    const refresh_token = AuthUtils.generateRefreshToken(payload);
-
-    session.upsert({ user_id: user.dataValues.id, token, refresh_token });
-
-    // Stoped for now
-
-    // const otpResponse = await sendOtp(request, reply);
-
-    // if (otpResponse.statusCode !== 200) {
-    //   return otpResponse;
-    // }
-    console.log('sos_user :>> ', sos_user);
-    const userProfile = {
-      user_id: user.dataValues.id,
-      email: user.dataValues.email,
-      first_name: user.dataValues.first_name,
-      last_name: user.dataValues.last_name,
-      date_of_birth: user.dataValues.date_of_birth,
-      phone_number: user.dataValues.phone_number,
-      is_profile_completed: sos_user.dataValues.is_profile_completed,
-      contact_added: sos_user.dataValues.contact_added,
-    };
-    console.log('userProfile :>> ', userProfile);
-    return reply
-      .status(200)
-      .send(
-        successResponse(
-          'Login successful',
-          { token, refresh_token, user: userProfile },
-          200,
-        ),
-      );
-  } catch (err) {
-    console.error('Error during login:', err);
-    return reply.status(500).send(errorResponse('Internal server error', 500));
-  }
+  const authService = new SosAuthService(email);
+  return await authService.login(email, password, reply);
 };
 
 export const refreshToken = async (
@@ -202,7 +131,7 @@ export const refreshToken = async (
     }
 
     const payload = AuthUtils.verifyRefreshToken(refresh_token);
-
+    console.log('payload :>> ', payload);
     if (!payload) {
       return reply
         .status(401)

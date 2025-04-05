@@ -40,7 +40,7 @@ const socketPlugin: FastifyPluginAsync<FastifySocketioOptions> = fp(
           socket.data.user = decoded.user_id;
           socket.data.role = decoded.role;
         }
-
+        console.log('socket.data :>> ', socket.data);
         if (socket.data.role === 'sos_user') {
           if (decoded) {
             socket.data.user = decoded.sos_user_id;
@@ -60,7 +60,7 @@ const socketPlugin: FastifyPluginAsync<FastifySocketioOptions> = fp(
           }
         }
         socketService.registerSocketEvents(socket, fastify.io);
-
+        console.log('socket.data :>> ', socket.data);
         if (socket.data.role === 'agent') {
           console.log(
             'saving the agent socket in redis',

@@ -54,6 +54,7 @@
     "plaid": "^30.0.0",
     "sequelize": "^6.37.5",
     "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "stripe": "^17.7.0",
     "tap": "^21.1.0",
     "toad-scheduler": "^3.0.1",

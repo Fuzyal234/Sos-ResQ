@@ -1,25 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import jwt from 'jsonwebtoken';
 import { SosUser, User } from '../../models/index';
 import { session } from '../../models/session';
 import { successResponse, errorResponse } from '../../helper/responses';
 import { generateOTP, sendOTPEmail } from '../../utils/otpUtils';
 import { otpStore, sendEmail } from '../../middlewares/email';
-import {
-  createUser,
-  createUserAccountService,
-} from '../../services/user/auth.service';
+import { createUserAccountService } from '../../services/user/auth.service';
 import argon2 from 'argon2';
-import {
-  CreateSosUserDTO,
-  CreateUserAccountDTO,
-  CreateUserDTO,
-  SosUserDTO,
-  UserAccountReturnDTO,
-} from '../../types/user';
+import { CreateUserAccountDTO, SosUserDTO } from '../../types/user';
 import utilityService from '../../services/utility.service';
-import { UUID } from 'crypto';
-import sessionService from '../../services/session.service';
 import userAuthService from '../../services/user/auth.service';
 import AuthUtils from '../../utils/authUtils';
 import { Op } from 'sequelize';

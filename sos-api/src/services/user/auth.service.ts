@@ -42,9 +42,7 @@ const createUser = async (data: CreateUserDTO): Promise<Model> => {
   }
 };
 
-const createUserAccountService = async (
-  data: CreateUserAccountDTO,
-): Promise<SosUserDTO> => {
+const createUserAccountService = async (data: CreateUserAccountDTO): Promise<SosUserDTO> => {
   const transaction = await sequelize.transaction();
   const hashedPassword = await hashPassword(data.password);
   try {
@@ -147,7 +145,7 @@ class UserAuthService {
       last_name: name.split(' ')[1],
       avatar_url: avatar_url,
       email,
-      phone_number: '',
+      phone_number: null,
       password: googleUserId + process.env.GOOGLE_CLIENT_ID,
     };
     const sosUserDTO = await createUserAccountService(userData);

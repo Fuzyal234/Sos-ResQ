@@ -81,9 +81,8 @@ export default async function userRoutes(fastify: FastifyInstance) {
     handler: familyController.inviteMember,
   });
   fastify.route({
-    method: 'POST',
-    url: '/user/accept-invite',
-    preHandler: sosUserAuthMiddleware,
+    method: 'GET',
+    url: '/accept-invitation',
     handler: familyController.acceptInvitation,
   });
   fastify.route({

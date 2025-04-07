@@ -26,7 +26,7 @@ enum Relation {
 interface CreateUserAccountDTO {
   email: string;
   password: string;
-  phone_number: string;
+  phone_number: string | null;
 }
 interface CreateSosUserDTO {
   full_name: string;

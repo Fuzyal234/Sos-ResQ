@@ -1,6 +1,7 @@
 import supertest from 'supertest';
 import fastify from '../../globalTestSetup';
 import AgentService from '../../../services/admin/agent.service';
+import { Agent } from '../../../models';
 
 let token = '';
 let agentId = '';

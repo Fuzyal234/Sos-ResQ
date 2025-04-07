@@ -76,28 +76,32 @@ class SocketService {
     });
 
     socket.on('send_message', async data => {
+      console.log('send message event emitted');
+      console.log('data :>> ', data);
       let data_json;
       try {
+        console.log('inside the try');
         data_json = JSON.parse(data);
       } catch (error) {
+        console.log('inside the catch');
         data_json = data;
       }
       data = data_json;
       const { sender_id, message } = data;
       const { user, role } = socket.data;
-
+      console.log('data :>> ', data);
       if (!message || !sender_id || !user) return;
-
+      console.log('i am after the if');
       const room_id =
         role === 'agent'
           ? await redisService.getAgentRoom(user)
           : await redisService.getUserRoom(user);
-
+      console.log('room_id :>> ', room_id);
       if (!room_id) return;
-
+      console.log('i am after room id');
       const members = io.sockets.adapter.rooms.get(room_id);
       if (!members || !members.has(socket.id)) return;
-
+      console.log('members :>> ', members);
       const messageId = await this.createMessageId();
       // Save message to Redis
       await redisService.saveChatMessage(room_id, {
@@ -105,9 +109,9 @@ class SocketService {
         content: message,
         timestamp: Date.now(),
         id: messageId,
-        readStatus: false
+        readStatus: false,
       });
-
+      console.log('emmiting the receive_message event');
       socket.to(room_id).emit('receive_message', {
         id: messageId,
         sender: role,

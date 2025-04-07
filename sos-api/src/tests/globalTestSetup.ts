@@ -4,6 +4,7 @@ import adminRoutes from '../routes/admin/admin.routes';
 import authRoutes from '../routes/admin/auth.routes';
 import userAuthRoutes from '../routes/user/auth.routes';
 import userRoutes from '../routes/user/user.routes';
+import agentsAuthRoutes from '../routes/agent/auth.routes';
 import Ajv from 'ajv';
 import ajvFormats from 'ajv-formats';
 import ajvErrors from 'ajv-errors';
@@ -26,7 +27,12 @@ beforeAll(async () => {
   }
 
   // Register socket plugin first
-  await fastify.register(socketPlugin);
+  await fastify.register(socketPlugin, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+    },
+  });
 
   // Register multipart plugin for file uploads
   await fastify.register(fastifyMultipart, {
@@ -41,7 +47,23 @@ beforeAll(async () => {
   fastify.register(authRoutes);
   fastify.register(userAuthRoutes);
   fastify.register(userRoutes);
+  fastify.register(agentsAuthRoutes);
 
+  // Start the server
+  try {
+    await fastify.listen({ port: 4444, host: '127.0.0.1' });
+  } catch (error: any) {
+    if (error.code === 'EADDRINUSE') {
+      console.log(
+        'Port 4444 is in use, trying to close existing connections...',
+      );
+      // You might want to add logic here to find and close the process using port 4444
+      // For now, we'll just try a different port
+      await fastify.listen({ port: 4445, host: '127.0.0.1' });
+    } else {
+      throw error;
+    }
+  }
   await fastify.ready();
 });
 

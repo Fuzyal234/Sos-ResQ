@@ -34,6 +34,8 @@ ajvErrors(ajv);
 
 fastify.setValidatorCompiler(({ schema }) => ajv.compile(schema));
 fastify.setErrorHandler((error, request, reply) => {
+  request.log.error(error, 'Error occurred');
+
   if (error.validation) {
     const errors = error.validation.flatMap(e => {
       if (e.keyword === 'errorMessage' && Array.isArray(e.params?.errors)) {
@@ -61,7 +63,11 @@ fastify.setErrorHandler((error, request, reply) => {
     });
   }
 
-  reply.send(error);
+  reply.status(error.statusCode || 500).send({
+    status: error.statusCode || 500,
+    message: error.message || 'Internal Server Error',
+    error: true,
+  });
 });
 
 // Start Server

@@ -29,6 +29,7 @@ describe('User auth Controller Tests', () => {
       .send({
         refresh_token: token,
       });
+    console.log('response.body :>> ', response.body);
     expect(response.status).toBe(200);
   });
 

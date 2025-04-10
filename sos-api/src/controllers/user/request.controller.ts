@@ -6,6 +6,7 @@ import socketService from '../../services/socket.service';
 import redisService from '../../services/redis.service';
 import { SosUser, SosUserSubscription } from '../../models';
 import { errorResponse, successResponse } from '../../helper/responses';
+import { FamilyMember } from '../../models/index';
 
 class RequestController {
   async createRequest(
@@ -13,6 +14,14 @@ class RequestController {
     request: FastifyRequest,
     reply: FastifyReply,
   ) {
+    const room = await redisService.getUserRoom(
+      request.user.sos_user_id as UUID,
+    );
+    if (room) {
+      return reply
+        .status(400)
+        .send(errorResponse('You already have an active request', 400));
+    }
     const { longitude, latitude } = request.body as {
       longitude: number;
       latitude: number;
@@ -22,9 +31,23 @@ class RequestController {
     const user_subscription = await SosUserSubscription.findOne({
       where: { sos_user_id, status: 'active' },
     });
+    const userFamily = await FamilyMember.findOne({
+      where: { sos_user_id, status: 'accepted' },
+      include: ['user_subscription'],
+    });
+
     // #TODO: This code is commented only during Developemnt
-    // if (!user_subscription) {
-    //     return reply.status(400).send(errorResponse("User subscription is not active", 400));
+
+    // const isEligibleUser =
+    //   user_subscription ||
+    //   userFamily ||
+    //   (userFamily &&
+    //     (userFamily as FamilyMember).dataValues.user_subscription.dataValues
+    //       .status === 'active');
+    // if (!isEligibleUser) {
+    //   return reply
+    //     .status(400)
+    //     .send(errorResponse('User subscription is not active', 400));
     // }
     // #TODO: This code is commented only during Developemnt
     const status = 'pending';

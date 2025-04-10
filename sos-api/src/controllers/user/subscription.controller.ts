@@ -52,6 +52,14 @@ class SubscriptionController {
           .status(400)
           .send(errorResponse('Please complete your profile first.', 400));
       }
+      const existingSubscription = await SosUserSubscription.findOne({
+        where: { sos_user_id },
+      });
+      if (existingSubscription) {
+        return reply
+          .status(400)
+          .send(errorResponse('You already have an active subscription.', 400));
+      }
 
       const subscriptionId = (request.body as { subscription_id: UUID })
         .subscription_id;
@@ -106,13 +114,13 @@ class SubscriptionController {
         subscription?.dataValues.price,
         session.id,
       );
-      if (subscription?.dataValues.members_count === 1) {
-        ProtectedEntities.create({
-          entity_id: sos_user_id,
-          entity_type: 'sos_user',
-          sos_user_subscription_id: sos_subscription.dataValues.id,
-        });
-      }
+      // if (subscription?.dataValues.members_count === 1) {
+      ProtectedEntities.create({
+        entity_id: sos_user_id,
+        entity_type: 'sos_user',
+        sos_user_subscription_id: sos_subscription.dataValues.id,
+      });
+      // }
       if (car) {
         ProtectedEntities.create({
           entity_id: car.dataValues.id,
@@ -133,7 +141,7 @@ class SubscriptionController {
         .send(
           successResponse(
             'You have subscribed successfully!',
-            { sessionId: session.id, subscription },
+            { sessionId: session.id, subscription, sos_subscription },
             201,
           ),
         );

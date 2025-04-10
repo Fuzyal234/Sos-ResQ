@@ -119,13 +119,6 @@ class SubscriptionService {
       status,
       auto_renewal,
     });
-    if (subscription.dataValues.members_count > 1) {
-      ProtectedEntities.create({
-        entity_id: sos_user_id,
-        entity_type: 'sos_user',
-        sos_user_subscription_id: subscription.dataValues.id,
-      });
-    }
 
     return sos_subscription;
   }

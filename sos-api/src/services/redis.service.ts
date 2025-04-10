@@ -137,6 +137,29 @@ class RedisService {
   public async removeUserSocket(userId: string): Promise<void> {
     await this.connection.del(`user_socket:${userId}`);
   }
+  public async setUsersInRoom(
+    roomId: string,
+    userIds: string[],
+  ): Promise<void> {
+    await this.connection.sadd(`room:${roomId}`, ...userIds);
+  }
+
+  public async getUsersInRoom(roomId: string): Promise<string[] | null> {
+    const members = await this.connection.smembers(`room:${roomId}`);
+    return members.length ? members : null;
+  }
+
+  public async removeUsersInRoom(roomId: string): Promise<void> {
+    const key = `room:${roomId}`;
+    const userIds = await this.connection.smembers(key);
+
+    for (const userId of userIds) {
+      await this.removeUserRoom(userId);
+      await this.removeUserSocket(userId);
+    }
+
+    await this.connection.del(key);
+  }
 
   public async setAgentSocket(
     agentId: string,
@@ -182,7 +205,15 @@ class RedisService {
     roomId: string,
     page: number = 1,
     limit: number = 50,
-  ): Promise<Array<{ sender: string; content: string; timestamp: number; id: string; readStatus: boolean }>> {
+  ): Promise<
+    Array<{
+      sender: string;
+      content: string;
+      timestamp: number;
+      id: string;
+      readStatus: boolean;
+    }>
+  > {
     const messageKey = `chat:${roomId}`;
     const start = (page - 1) * limit;
     const end = start + limit - 1;
@@ -196,7 +227,10 @@ class RedisService {
    * @param roomId The chat room ID
    * @param messageId The ID of the message to mark as read
    */
-  public async markMessageAsRead(roomId: string, messageId: string): Promise<void> {
+  public async markMessageAsRead(
+    roomId: string,
+    messageId: string,
+  ): Promise<void> {
     const messageKey = `chat:${roomId}`;
     const messages = await this.connection.lrange(messageKey, 0, -1);
 

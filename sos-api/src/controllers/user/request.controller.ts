@@ -7,6 +7,7 @@ import redisService from '../../services/redis.service';
 import { SosUser, SosUserSubscription } from '../../models';
 import { errorResponse, successResponse } from '../../helper/responses';
 import { FamilyMember } from '../../models/index';
+import SosRequest from '../../models/sos_request.model';
 
 class RequestController {
   async createRequest(
@@ -17,10 +18,51 @@ class RequestController {
     const room = await redisService.getUserRoom(
       request.user.sos_user_id as UUID,
     );
+
     if (room) {
-      return reply
-        .status(400)
-        .send(errorResponse('You already have an active request', 400));
+      const userIds = await redisService.getUsersInRoom(room);
+
+      if (userIds && userIds.length >= 2) {
+        return reply
+          .status(400)
+          .send(errorResponse('You already have an active request', 400));
+      }
+      if (userIds && userIds.length === 1) {
+        const existingRequest = await SosRequest.findOne({
+          where: { sos_user_id: request.user.sos_user_id, status: 'pending' },
+          order: [['created_at', 'DESC']],
+        });
+        console.log('existingRequest :>> ', existingRequest);
+        if (existingRequest) {
+          const createdAt = existingRequest.dataValues.createdAt;
+          if (!createdAt) {
+            return reply
+              .status(400)
+              .send(errorResponse('Invalid request data', 400));
+          }
+          const now = new Date();
+          console.log('now.getTime() :>> ', now.getTime());
+          console.log('createdAt.getTime() :>> ', createdAt.getTime());
+
+          const diff = now.getTime() - createdAt.getTime();
+          console.log('diff :>> ', diff);
+          if (diff < 60000) {
+            return reply
+              .status(400)
+              .send(
+                errorResponse(
+                  'You have already made a request within the last minute',
+                  400,
+                ),
+              );
+          }
+        }
+        const room = await redisService.getUserRoom(
+          request.user.sos_user_id as UUID,
+        );
+        redisService.removeUserRoom(request.user.sos_user_id as UUID);
+        redisService.removeUsersInRoom(room ? room : '');
+      }
     }
     const { longitude, latitude } = request.body as {
       longitude: number;
@@ -52,7 +94,6 @@ class RequestController {
     // #TODO: This code is commented only during Developemnt
     const status = 'pending';
     const request_timestamp = new Date();
-    console.log('sos_user_id :>> ', sos_user_id);
     const sos_request: SosRequestDTO = await requestService.createSosRequest({
       sos_user_id,
       location,
@@ -68,6 +109,7 @@ class RequestController {
       .emit('sos_request_notification', { room_id, sos_user_id });
 
     redisService.setUserRoom(sos_user_id, room_id);
+    redisService.setUsersInRoom(room_id, [sos_user_id]);
     const socketId = await redisService.getUserSocket(sos_user_id);
     if (socketId) {
       console.log('socketId :>>>>>> in the request controller ', socketId);

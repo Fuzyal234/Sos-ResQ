@@ -97,9 +97,8 @@ class SocketService {
             return;
           }
 
-          const room_id = role === 'agent'
-            ? await redisService.getAgentRoom(user)
-            : await redisService.getUserRoom(user);
+          const room_id =
+            role === 'agent' ? await redisService.getAgentRoom(user) : await redisService.getUserRoom(user);
 
           if (!room_id) {
             console.warn('No room found for user:', user);
@@ -108,7 +107,10 @@ class SocketService {
 
           const members = io.sockets.adapter.rooms.get(room_id);
           if (!members || !members.has(socket.id)) {
-            console.warn('Socket not in room:', { socketId: socket.id, room_id });
+            console.warn('Socket not in room:', {
+              socketId: socket.id,
+              room_id,
+            });
             return;
           }
 
@@ -135,10 +137,7 @@ class SocketService {
 
       socket.on('get_chat_history', async data => {
         const { user, role } = socket.data;
-        const room_id =
-          role === 'agent'
-            ? await redisService.getAgentRoom(user)
-            : await redisService.getUserRoom(user);
+        const room_id = role === 'agent' ? await redisService.getAgentRoom(user) : await redisService.getUserRoom(user);
         const messages = await redisService.getChatHistory(room_id as string);
         console.log('messages :>> ', messages);
         socket.emit('chat_history', messages);
@@ -172,9 +171,11 @@ class SocketService {
           });
         }
       });
+
       socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
       });
+
       socket.on('message_read', async data => {
         let data_json;
         try {
@@ -185,10 +186,7 @@ class SocketService {
         data = data_json;
         const { sender_id, message_id } = data;
         const { user, role } = socket.data;
-        const room_id =
-          role === 'agent'
-            ? await redisService.getAgentRoom(user)
-            : await redisService.getUserRoom(user);
+        const room_id = role === 'agent' ? await redisService.getAgentRoom(user) : await redisService.getUserRoom(user);
         if (!room_id) return;
         const members = io.sockets.adapter.rooms.get(room_id);
         if (!members || !members.has(socket.id)) return;
@@ -213,7 +211,7 @@ class SocketService {
           const request = await SosRequest.findOne({
             where: { id: request_id },
           });
-          console.log('request ....:>> ', request);
+
           if (!request) {
             return;
           }
@@ -225,9 +223,7 @@ class SocketService {
             redisService.setUsersInRoom(room_id, [socket.data.user]);
             socket.join(room_id);
             socket.to(room_id).emit('connected_to_sos_user', room_id);
-            socket
-              .to('room_agent_notifications')
-              .emit('request_handled', { request_id: request_id });
+            socket.to('room_agent_notifications').emit('request_handled', { request_id: request_id });
           }
         });
       }

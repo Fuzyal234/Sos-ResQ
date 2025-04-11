@@ -10,22 +10,14 @@ import { FamilyMember } from '../../models/index';
 import SosRequest from '../../models/sos_request.model';
 
 class RequestController {
-  async createRequest(
-    fastify: FastifyInstance,
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ) {
-    const room = await redisService.getUserRoom(
-      request.user.sos_user_id as UUID,
-    );
+  async createRequest(fastify: FastifyInstance, request: FastifyRequest, reply: FastifyReply) {
+    const room = await redisService.getUserRoom(request.user.sos_user_id as UUID);
 
     if (room) {
       const userIds = await redisService.getUsersInRoom(room);
 
       if (userIds && userIds.length >= 2) {
-        return reply
-          .status(400)
-          .send(errorResponse('You already have an active request', 400));
+        return reply.status(400).send(errorResponse('You already have an active request', 400));
       }
       if (userIds && userIds.length === 1) {
         const existingRequest = await SosRequest.findOne({
@@ -36,9 +28,7 @@ class RequestController {
         if (existingRequest) {
           const createdAt = existingRequest.dataValues.createdAt;
           if (!createdAt) {
-            return reply
-              .status(400)
-              .send(errorResponse('Invalid request data', 400));
+            return reply.status(400).send(errorResponse('Invalid request data', 400));
           }
           const now = new Date();
           console.log('now.getTime() :>> ', now.getTime());
@@ -47,19 +37,10 @@ class RequestController {
           const diff = now.getTime() - createdAt.getTime();
           console.log('diff :>> ', diff);
           if (diff < 60000) {
-            return reply
-              .status(400)
-              .send(
-                errorResponse(
-                  'You have already made a request within the last minute',
-                  400,
-                ),
-              );
+            return reply.status(400).send(errorResponse('You have already made a request within the last minute', 400));
           }
         }
-        const room = await redisService.getUserRoom(
-          request.user.sos_user_id as UUID,
-        );
+        const room = await redisService.getUserRoom(request.user.sos_user_id as UUID);
         redisService.removeUserRoom(request.user.sos_user_id as UUID);
         redisService.removeUsersInRoom(room ? room : '');
       }
@@ -103,10 +84,15 @@ class RequestController {
     const room_id = await socketService.createChatRoom(sos_user_id);
     const sockets = await fastify.io.fetchSockets();
 
+    console.log('sos_request.id :>> ', sos_request.id);
+    console.log('sos_request :>> ', sos_request);
+
     redisService.addToQueue(sos_request);
-    fastify.io
-      .to('room_agent_notifications')
-      .emit('sos_request_notification', { room_id, sos_user_id });
+    fastify.io.to('room_agent_notifications').emit('sos_request_notification', {
+      room_id,
+      sos_user_id,
+      request_id: sos_request.id,
+    });
 
     redisService.setUserRoom(sos_user_id, room_id);
     redisService.setUsersInRoom(room_id, [sos_user_id]);
@@ -119,15 +105,7 @@ class RequestController {
       }
     }
 
-    return reply
-      .status(201)
-      .send(
-        successResponse(
-          'Request created successfully!',
-          { sos_request, room_id },
-          201,
-        ),
-      );
+    return reply.status(201).send(successResponse('Request created successfully!', { sos_request, room_id }, 201));
   }
 
   async getQueuedJobs(request: FastifyRequest, reply: FastifyReply) {

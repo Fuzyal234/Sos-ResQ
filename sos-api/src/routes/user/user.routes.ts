@@ -16,14 +16,8 @@ import { carCreateValidationSchema } from '../../validation/car.validation';
 import { houseCreateValidationSchema } from '../../validation/house.validation';
 import { sosRequestValidationSchema } from '../../validation/sos_request.validation';
 import { subscribeValidationSchema } from '../../validation/subscribe.validation';
-import {
-  confirmMemberInviteValidationSchema,
-  memberInviteValidationSchema,
-} from '../../validation/family.validation';
-import {
-  contactCreateValidationSchema,
-  contactUpdateValidationSchema,
-} from '../../validation/contact.validation';
+import { confirmMemberInviteValidationSchema, memberInviteValidationSchema } from '../../validation/family.validation';
+import { contactCreateValidationSchema, contactUpdateValidationSchema } from '../../validation/contact.validation';
 import chatController from '../../controllers/user/chat.controller';
 
 export default async function userRoutes(fastify: FastifyInstance) {
@@ -135,20 +129,16 @@ export default async function userRoutes(fastify: FastifyInstance) {
     handler: chatController.getChatHistory,
   });
 
-  fastify.get(
-    '/ws/user/chat',
-    { websocket: true, preHandler: sosUserAuthMiddleware },
-    (connection, req) => {
-      const userId = req.user as UUID;
-      userSockets.set(userId, connection);
+  fastify.get('/ws/user/chat', { websocket: true, preHandler: sosUserAuthMiddleware }, (connection, req) => {
+    const userId = req.user as UUID;
+    userSockets.set(userId, connection);
 
-      connection.on('close', () => {
-        Agent.update({ status: 'available' }, { where: { user_id: userId } });
-        redisService.removeJobFromQueue(userId);
-        userSockets.delete(userId);
-      });
-    },
-  );
+    connection.on('close', () => {
+      Agent.update({ status: 'available' }, { where: { user_id: userId } });
+      redisService.removeJobFromQueue(userId);
+      userSockets.delete(userId);
+    });
+  });
 }
 
 const userSockets = new Map<UUID, WebSocket>();

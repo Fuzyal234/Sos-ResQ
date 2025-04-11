@@ -222,7 +222,7 @@ class SocketService {
             redisService.setAgentRoom(socket.data.user, room_id);
             redisService.setUsersInRoom(room_id, [socket.data.user]);
             socket.join(room_id);
-            socket.to(room_id).emit('connected_to_sos_user', room_id);
+            socket.to(room_id).emit('connected_to_agent', room_id);
             socket.to('room_agent_notifications').emit('request_handled', { request_id: request_id });
           }
         });

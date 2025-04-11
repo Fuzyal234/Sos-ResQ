@@ -32,12 +32,10 @@ describe('Socket.IO Plugin', () => {
     io = fastify.io;
 
     // Login as admin
-    const responseAdmin = await supertest(fastify.server)
-      .post('/login/admin')
-      .send({
-        email: 'admin@example.com',
-        password: 'Admin@123',
-      });
+    const responseAdmin = await supertest(fastify.server).post('/login/admin').send({
+      email: 'admin@example.com',
+      password: 'Admin@123',
+    });
     console.log('logging admin');
     expect(responseAdmin.status).toBe(200);
     adminToken = responseAdmin.body.data.token;
@@ -59,12 +57,10 @@ describe('Socket.IO Plugin', () => {
     expect(responseAgentCreate.status).toBe(201);
 
     // Login as agent
-    const responseAgent = await supertest(fastify.server)
-      .post('/login/agent')
-      .send({
-        email: 'johnsocket@example1.com',
-        password: 'Password@123',
-      });
+    const responseAgent = await supertest(fastify.server).post('/login/agent').send({
+      email: 'johnsocket@example1.com',
+      password: 'Password@123',
+    });
     console.log('logging agent');
     console.log('responseAgent.body :>> ', responseAgent.body);
     agentToken = responseAgent.body.data.token;
@@ -117,8 +113,8 @@ describe('Socket.IO Plugin', () => {
     // });
 
     // clientSocket.on('connect', () => {
-    //   clientSocket.on('connected_to_sos_user', (data: any) => {
-    //     console.log('connected_to_sos_user', data);
+    //   clientSocket.on('connected_to_agent', (data: any) => {
+    //     console.log('connected_to_agent', data);
     //   });
     // });
 
@@ -250,9 +246,7 @@ describe('Socket.IO Plugin', () => {
           readStatus: false,
         },
       ];
-      (redisService.getChatHistory as jest.Mock).mockResolvedValue(
-        mockChatHistory,
-      );
+      (redisService.getChatHistory as jest.Mock).mockResolvedValue(mockChatHistory);
 
       // Connect both sockets first
       clientSocket.connect();

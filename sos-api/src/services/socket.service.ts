@@ -145,13 +145,33 @@ class SocketService {
 
       socket.on('end_chat', async data => {
         if (socket.data.role === 'agent') {
-          console.log('end chat triggered by agent');
           redisService.getAgentRoom(socket.data.user).then(room_id => {
             if (room_id) {
               socket.to(room_id).emit('agent_left', {
                 timeStamp: Date.now(),
               });
               socket.leave(room_id);
+              redisService.getUsersInRoom(room_id as string).then(usersIds => {
+                if (!usersIds) {
+                  console.log('no users in room');
+                  return;
+                }
+                for (const userId of usersIds) {
+                  if (userId !== socket.data.user) {
+                    const getagentSocket = async () => {
+                      const userSocketId = await redisService.getUserSocket(userId);
+                      if (!userSocketId) {
+                        console.log('no user socket found');
+                        return;
+                      }
+                      const userSocket = await io.sockets.sockets.get(userSocketId);
+
+                      userSocket?.leave(room_id);
+                    };
+                    getagentSocket();
+                  }
+                }
+              });
             }
             redisService.clearChatHistory(room_id as string);
             redisService.removeUsersInRoom(room_id as string);
@@ -159,14 +179,37 @@ class SocketService {
         }
 
         if (socket.data.role === 'sos_user') {
-          console.log('end chat triggered by sos user');
           redisService.getUserRoom(socket.data.user).then(room_id => {
             if (room_id) {
               socket.to(room_id).emit('user_left', {
                 timeStamp: Date.now(),
               });
               socket.leave(room_id);
+              redisService.getUsersInRoom(room_id as string).then(usersIds => {
+                if (!usersIds) {
+                  console.log('no users in room');
+                  return;
+                }
+                console.log('userIds  :>> ', usersIds);
+                for (const userId of usersIds) {
+                  if (userId !== socket.data.user) {
+                    console.log('this is the id of the agent:>> ', userId);
+                    const getagentSocket = async () => {
+                      const agentSocketId = await redisService.getAgentSocket(userId);
+                      if (!agentSocketId) {
+                        console.log('no agent socket found');
+                        return;
+                      }
+                      const agentSocket = await io.sockets.sockets.get(agentSocketId);
+
+                      agentSocket?.leave(room_id);
+                    };
+                    getagentSocket();
+                  }
+                }
+              });
             }
+            redisService.clearChatHistory(room_id as string);
             redisService.removeUsersInRoom(room_id as string);
           });
         }
@@ -196,6 +239,7 @@ class SocketService {
 
       if (socket.data.role === 'agent') {
         socket.on('connect_to_sos_user', async data => {
+          console.log('connect_to_sos_user triggered by agent');
           let data_json;
           try {
             data_json = JSON.parse(data);
@@ -213,15 +257,18 @@ class SocketService {
           });
 
           if (!request) {
+            console.log('Request not found thats why returning');
             return;
           }
           await request.update({ status: 'in_progress' });
           const members_set = io.sockets.adapter.rooms.get(room_id);
+          console.log('members_set :>> ', members_set);
 
           if (members_set && members_set.size < 2) {
             redisService.setAgentRoom(socket.data.user, room_id);
             redisService.setUsersInRoom(room_id, [socket.data.user]);
             socket.join(room_id);
+            console.log('members in the room:>> ', io.sockets.adapter.rooms.get(room_id));
             socket.to(room_id).emit('connected_to_agent', room_id);
             socket.to('room_agent_notifications').emit('request_handled', { request_id: request_id });
           }

@@ -65,10 +65,7 @@ class RedisService {
 
   public async removeJobFromQueue(sos_user_id: UUID) {
     const jobs = await this.sosQueue.getWaiting();
-    const job = jobs.find(
-      (job: { data: { sos_user_id: UUID } }) =>
-        job.data.sos_user_id === sos_user_id,
-    );
+    const job = jobs.find((job: { data: { sos_user_id: UUID } }) => job.data.sos_user_id === sos_user_id);
     if (job) {
       await job.remove();
     }
@@ -137,34 +134,30 @@ class RedisService {
   public async removeUserSocket(userId: string): Promise<void> {
     await this.connection.del(`user_socket:${userId}`);
   }
-  public async setUsersInRoom(
-    roomId: string,
-    userIds: string[],
-  ): Promise<void> {
-    await this.connection.sadd(`room:${roomId}`, ...userIds);
+  public async setUsersInRoom(roomId: string, userIds: string[]): Promise<void> {
+    await this.connection.sadd(roomId, ...userIds);
   }
 
   public async getUsersInRoom(roomId: string): Promise<string[] | null> {
-    const members = await this.connection.smembers(`room:${roomId}`);
+    const members = await this.connection.smembers(roomId);
     return members.length ? members : null;
   }
 
   public async removeUsersInRoom(roomId: string): Promise<void> {
-    const key = `room:${roomId}`;
-    const userIds = await this.connection.smembers(key);
+    console.log('roomId in the rmoveUsersInRoom function:>> ', roomId);
+    const userIds = await this.connection.smembers(roomId);
+    console.log('userIds :>> ', userIds);
 
     for (const userId of userIds) {
       await this.removeUserRoom(userId);
-      await this.removeUserSocket(userId);
+      // await this.removeUserSocket(userId);
+      await this.removeAgentRoom(userId);
     }
 
-    await this.connection.del(key);
+    await this.connection.del(roomId);
   }
 
-  public async setAgentSocket(
-    agentId: string,
-    socketId: string,
-  ): Promise<void> {
+  public async setAgentSocket(agentId: string, socketId: string): Promise<void> {
     await this.connection.set(`agent_socket:${agentId}`, socketId);
   }
 
@@ -218,7 +211,10 @@ class RedisService {
     const start = (page - 1) * limit;
     const end = start + limit - 1;
 
-    const messages = await this.connection.lrange(messageKey, start, end);
+    // Redis negative indexing to get from end
+    const messages = await this.connection.lrange(messageKey, -end - 1, -start - 1);
+    messages.reverse(); // To get most recent first
+
     return messages.map((msg: string) => JSON.parse(msg));
   }
 
@@ -227,10 +223,7 @@ class RedisService {
    * @param roomId The chat room ID
    * @param messageId The ID of the message to mark as read
    */
-  public async markMessageAsRead(
-    roomId: string,
-    messageId: string,
-  ): Promise<void> {
+  public async markMessageAsRead(roomId: string, messageId: string): Promise<void> {
     const messageKey = `chat:${roomId}`;
     const messages = await this.connection.lrange(messageKey, 0, -1);
 

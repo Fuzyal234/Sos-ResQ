@@ -21,9 +21,9 @@ class AgentAuthController {
   }
 
   public async changePassword(request: FastifyRequest, reply: FastifyReply) {
-    const { oldPassword, newPassword } = request.body as {
-      oldPassword: string;
-      newPassword: string;
+    const { old_password, new_password } = request.body as {
+      old_password: string;
+      new_password: string;
     };
     try {
       const user = await User.findByPk(request.user.id);
@@ -32,7 +32,7 @@ class AgentAuthController {
       }
       const email = user.dataValues.email;
       const authService = new AgentAuthService(email);
-      const passwordChanged = await authService.changePassword(email, oldPassword, newPassword);
+      const passwordChanged = await authService.changePassword(email, old_password, new_password);
       if (passwordChanged) {
         return reply.status(200).send(successResponse('Password changed successfully.', null, 200));
       }

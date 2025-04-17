@@ -91,7 +91,7 @@ const updateAgentValidationSchema = {
 const changePasswordValidationSchema = {
   body: {
     type: 'object',
-    required: ['email', 'old_password', 'password'],
+    required: ['old_password', 'new_password'],
     properties: {
       old_password: { type: 'string', minLength: 6 },
       password: { type: 'string', minLength: 6 },
@@ -99,14 +99,12 @@ const changePasswordValidationSchema = {
     errorMessage: {
       type: 'The request body must be an object.',
       required: {
-        email: "The 'email' field is required.",
         old_password: "The 'old_password' field is required.",
-        password: "The 'password' field is required.",
+        new_password: "The 'password' field is required.",
       },
       properties: {
-        email: "The 'email' field must be a string.",
         old_password: "The 'old_password' field must be a string.",
-        password: "The 'password' field must be a string.",
+        new_password: "The 'password' field must be a string.",
       },
     },
   },

@@ -21,7 +21,7 @@ describe('Agent Auth Controller Tests', () => {
       .post('/admin/change-password')
       .send({
         old_password: 'Admin@123',
-        new_password: 'Admin@1234',
+        new_password: 'Admin@123',
       })
       .set('Authorization', `Bearer ${token}`);
     console.log('response123 :>> ', response.body);

@@ -2,6 +2,7 @@ import { Model } from 'sequelize';
 import { BaseAuthService, UserProfile } from './base-auth.service';
 import User from '../../models/user.model';
 import { Agent } from '../../models';
+import argon2 from 'argon2';
 
 export class AgentAuthService extends BaseAuthService {
   private email: string;

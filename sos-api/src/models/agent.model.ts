@@ -1,43 +1,47 @@
-import { Model, DataTypes } from "sequelize";
-import sequelizeInit from "../config/sequelize";
-import { v4 as uuidv4 } from "uuid";
+import { Model, DataTypes } from 'sequelize';
+import sequelizeInit from '../config/sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 class Agent extends Model {
-    public id!: string;
-    public user_id!: string;
-    public status!: string;
+  public id!: string;
+  public user_id!: string;
+  public status!: string;
 }
 
 Agent.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: uuidv4,
-            primaryKey: true,
-        },
-        user_id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'users',
-                key: 'id',
-            },
-            onUpdate: 'CASCADE',
-            onDelete: 'CASCADE',
-        },
-        status: {
-            type: DataTypes.ENUM('online','available', 'busy', 'offline'),
-            allowNull: false,
-            defaultValue: 'offline',
-        },
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: uuidv4,
+      primaryKey: true,
     },
-    {
-        sequelize: sequelizeInit,
-        modelName: 'agent',
-        tableName: 'agents',
-        timestamps: true,
-        underscored: true,
-    }
-)
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+    },
+    status: {
+      type: DataTypes.ENUM('online', 'available', 'busy', 'offline'),
+      allowNull: false,
+      defaultValue: 'offline',
+    },
+    avatar_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
+    sequelize: sequelizeInit,
+    modelName: 'agent',
+    tableName: 'agents',
+    timestamps: true,
+    underscored: true,
+  },
+);
 
-export default Agent
+export default Agent;

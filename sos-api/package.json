@@ -8,7 +8,11 @@
     "dev": "env-cmd -e development nodemon --inspect=0.0.0.0:9229 src/index.ts",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "start": "ts-node src/index.ts",
-    "test": "npx jest ./src/tests --coverage --detectOpenHandles"
+    "test": "npx jest ./src/tests --coverage --detectOpenHandles",
+    "make:migration": "npx sequelize-cli migration:generate --migrations-path ./src/models/migration --name",
+    "migrate": "docker exec -it sos-api npx sequelize-cli db:migrate --migrations-path ./src/models/migration",
+    "db:seed": "docker exec -it sos-api npx sequelize-cli db:seed:all --seeders-path ./src/seeders",
+    "db:drop": "docker exec -it sos-api npx sequelize-cli db:drop"
   },
   "keywords": [],
   "author": "",

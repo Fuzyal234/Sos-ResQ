@@ -9,6 +9,7 @@ import Car from './car.model';
 import House from './house.model';
 import { ProtectedEntities } from './portected_entities.model';
 import FamilyMember from './family_member.model';
+import { SubscriptionPrices } from './subscription_prices.model';
 
 User.hasOne(SosUser, { foreignKey: 'user_id' });
 SosUser.belongsTo(User, { foreignKey: 'user_id' });
@@ -48,6 +49,9 @@ Payment.belongsTo(SosUser, {
 
 Subscription.belongsToMany(SosUser, { through: SosUserSubscription });
 SosUser.belongsToMany(Subscription, { through: SosUserSubscription });
+
+Subscription.hasMany(SubscriptionPrices, { foreignKey: 'subscription_id', as: 'subscription_prices' });
+SubscriptionPrices.belongsTo(Subscription, { foreignKey: 'subscription_id', as: 'subscription' });
 
 User.hasMany(session, { foreignKey: 'user_id', as: 'sessions' });
 session.belongsTo(User, { foreignKey: 'id', as: 'user' });
@@ -89,4 +93,6 @@ export {
   Car,
   House,
   FamilyMember,
+  ProtectedEntities,
+  SubscriptionPrices,
 };

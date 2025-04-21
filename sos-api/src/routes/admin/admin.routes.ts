@@ -2,16 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { subscriptionController } from '../../controllers/admin/subscription.controller';
 import { adminAuthMiddleware } from '../../middlewares/authStrategies';
 import joiToJsonSchema from 'joi-to-json';
-import {
-  index,
-  create,
-  update,
-  show,
-} from '../../controllers/admin/agent.controller';
-import {
-  createAgentValidationSchema,
-  updateAgentValidationSchema,
-} from '../../validation/agent.validation';
+import { index, create, update, show } from '../../controllers/admin/agent.controller';
+import { createAgentValidationSchema, updateAgentValidationSchema } from '../../validation/agent.validation';
 import {
   subscriptionCreateValidationSchema,
   subscriptionUpdateValidationSchema,

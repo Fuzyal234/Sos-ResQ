@@ -30,13 +30,9 @@ describe('Admin Subscription Controller Errors Tests', () => {
     expect(response.status).toBe(200);
     token = response.body.data.token;
     // Get the mocked service
-    subscriptionService = jest.requireMock(
-      '../../../services/admin/subscription.service',
-    ).default;
+    subscriptionService = jest.requireMock('../../../services/admin/subscription.service').default;
 
-    Subscription = jest.requireMock(
-      '../../../models/subscription.model',
-    ).default;
+    Subscription = jest.requireMock('../../../models/subscription.model').default;
   });
 
   beforeEach(() => {
@@ -51,9 +47,7 @@ describe('Admin Subscription Controller Errors Tests', () => {
 
   test('GET /admin/subscriptions - Should return 500 on error', async () => {
     // Mock the service to throw an error
-    subscriptionService.getAllSubscriptions.mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    subscriptionService.getAllSubscriptions.mockRejectedValueOnce(new Error('Database error'));
 
     const response = await supertest(fastify.server)
       .get('/admin/subscriptions')
@@ -95,12 +89,11 @@ describe('Admin Subscription Controller Errors Tests', () => {
       members_count: 1,
       includes_car: false,
       includes_house: false,
-      price: 45,
+      monthly_price: 45,
+      yearly_price: 45,
       description: 'This is a basic plan',
     });
-    subscriptionService.updateSubscription.mockRejectedValueOnce(
-      Error('Error updating Subscription'),
-    );
+    subscriptionService.updateSubscription.mockRejectedValueOnce(Error('Error updating Subscription'));
 
     const response = await supertest(fastify.server)
       .put(`/admin/subscription/:${subscriptionId}`)
@@ -109,7 +102,8 @@ describe('Admin Subscription Controller Errors Tests', () => {
         members_count: 1,
         includes_car: false,
         includes_house: false,
-        price: 45,
+        monthly_price: 45,
+        yearly_price: 45,
         description: 'This is a basic plan',
       })
       .set('Authorization', `Bearer ${token}`);

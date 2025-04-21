@@ -39,9 +39,7 @@ describe('Subscription Controller 404 Test', () => {
   });
 
   test('GET /subscriptions - Should give 404 response because no subscription available', async () => {
-    const response = await supertest(fastify.server)
-      .get('/subscriptions')
-      .set('Authorization', `Bearer ${token}`);
+    const response = await supertest(fastify.server).get('/subscriptions').set('Authorization', `Bearer ${token}`);
     expect(response.status).toBe(404);
   });
 });
@@ -58,23 +56,18 @@ describe('Subscription Controller Tests', () => {
     expect(response.status).toBe(201);
     token = response.body.data.token;
 
-    const completeProfileResponse = await supertest(fastify.server)
-      .post('/signup')
-      .send({
-        first_name: 'Complete',
-        last_name: 'Profile',
-        email: 'complete.profile@devflovv.com',
-        phone_number: '+12344248222',
-        password: 'Password@123',
-      });
+    const completeProfileResponse = await supertest(fastify.server).post('/signup').send({
+      first_name: 'Complete',
+      last_name: 'Profile',
+      email: 'complete.profile@devflovv.com',
+      phone_number: '+12344248222',
+      password: 'Password@123',
+    });
     expect(completeProfileResponse.status).toBe(201);
     completeProfileToken = completeProfileResponse.body.data.token;
 
     const userProfile = completeProfileResponse.body.data.user;
-    await SosUser.update(
-      { is_profile_completed: true },
-      { where: { id: userProfile.user_id } },
-    );
+    await SosUser.update({ is_profile_completed: true }, { where: { id: userProfile.user_id } });
 
     const subscriptionData: CreateSubscriptionDTO = {
       name: 'Basic Plan',
@@ -82,19 +75,15 @@ describe('Subscription Controller Tests', () => {
       includes_house: false,
       includes_car: false,
       members_count: 1,
-      price: 9.99,
-      stripe_price_id: 'price_test_1',
       stripe_product_id: 'prod_test_1',
     };
 
     const subscriptionData2: CreateSubscriptionDTO = {
       name: 'Premium Plan',
       description: 'Premium subscription plan with all features',
-      includes_house: true,
-      includes_car: true,
+      includes_house: false,
+      includes_car: false,
       members_count: 5,
-      price: 29.99,
-      stripe_price_id: 'price_test_2',
       stripe_product_id: 'prod_test_2',
     };
 
@@ -103,9 +92,7 @@ describe('Subscription Controller Tests', () => {
   });
 
   test('GET /subscriptions - Should get all subscriptions', async () => {
-    const response = await supertest(fastify.server)
-      .get('/subscriptions')
-      .set('Authorization', `Bearer ${token}`);
+    const response = await supertest(fastify.server).get('/subscriptions').set('Authorization', `Bearer ${token}`);
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveLength(2);
     subscription_id = response.body.data[0].id;
@@ -127,6 +114,7 @@ describe('Subscription Controller Tests', () => {
       .post(`/user/subscribe`)
       .send({
         subscription_id: subscription_id,
+        period: 'month',
         auto_renewal: true,
       })
       .set('Authorization', `Bearer ${completeProfileToken}`);
@@ -174,11 +162,9 @@ describe('Subscription Controller Tests', () => {
 
   describe('GET /user/subscriptions', () => {
     beforeAll(async () => {
-      jest
-        .spyOn(SubscriptionService, 'getAllSubscriptionsForUser')
-        .mockImplementation(() => {
-          return Promise.resolve([]);
-        });
+      jest.spyOn(SubscriptionService, 'getAllSubscriptionsForUser').mockImplementation(() => {
+        return Promise.resolve([]);
+      });
     });
 
     test('Should return 500', async () => {

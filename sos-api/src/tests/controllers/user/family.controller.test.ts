@@ -30,8 +30,6 @@ describe('Family Controller Tests', () => {
       includes_house: true,
       includes_car: true,
       members_count: 5,
-      price: 29.99,
-      stripe_price_id: 'price_test_family',
       stripe_product_id: 'prod_test_family',
     });
     subscriptionId = subscription.dataValues.id;
@@ -56,15 +54,13 @@ describe('Family Controller Tests', () => {
   });
 
   test('POST /user/invite - Should create a new invite', async () => {
-    const inviteUserResponse = await supertest(fastify.server)
-      .post('/signup')
-      .send({
-        first_name: 'Invited',
-        last_name: 'User',
-        email: inviteEmail,
-        phone_number: '+12345678901',
-        password: 'Password@123',
-      });
+    const inviteUserResponse = await supertest(fastify.server).post('/signup').send({
+      first_name: 'Invited',
+      last_name: 'User',
+      email: inviteEmail,
+      phone_number: '+12345678901',
+      password: 'Password@123',
+    });
     expect(inviteUserResponse.status).toBe(201);
 
     const response = await supertest(fastify.server)

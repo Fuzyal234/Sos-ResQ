@@ -22,12 +22,13 @@ describe('Admin Subscription Controller Tests', () => {
         members_count: 1,
         includes_car: false,
         includes_house: false,
-        price: 45,
+        monthly_price: 45,
+        yearly_price: 45,
         description: 'This is a basic plan',
       })
       .set('Authorization', `Bearer ${token}`);
     console.log('response in subscription controller tests:>> ', response.body);
-    subscriptionId = response.body.data.id;
+    subscriptionId = response.body.data.subscription.id;
     expect(response.status).toBe(201);
   });
 
@@ -53,7 +54,8 @@ describe('Admin Subscription Controller Tests', () => {
         members_count: 1,
         includes_car: false,
         includes_house: false,
-        price: 45,
+        monthly_price: 45,
+        yearly_price: 45,
         description: 'This is a basic plan',
       })
       .set('Authorization', `Bearer ${token}`);

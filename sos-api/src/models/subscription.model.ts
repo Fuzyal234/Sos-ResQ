@@ -1,7 +1,8 @@
-import { Model, DataTypes, Optional } from "sequelize";
-import sequelizeInit from "../config/sequelize";
-import { v4 as uuidv4 } from "uuid";
-import { Payment } from "./payment.model";
+import { Model, DataTypes, Optional } from 'sequelize';
+import sequelizeInit from '../config/sequelize';
+import { v4 as uuidv4 } from 'uuid';
+import { Payment } from './payment.model';
+import { SubscriptionPrices } from './subscription_prices.model';
 
 interface SubscriptionAttributes {
   id: string;
@@ -9,15 +10,25 @@ interface SubscriptionAttributes {
   includes_house: boolean;
   includes_car: boolean;
   members_count: number;
-  price: number;
   description: string;
   stripe_product_id: string;
-  stripe_price_id: string;
   created_at?: Date;
   updated_at?: Date;
+  subscription_prices?: SubscriptionPrices[];
 }
-interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, "id"> { }
-class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> { }
+
+interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, 'id'> { }
+
+class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> {
+  public subscription_prices?: SubscriptionPrices[];
+
+  public static associate(models: any) {
+    Subscription.hasMany(models.SubscriptionPrices, {
+      foreignKey: 'subscription_id',
+      as: 'subscription_prices'
+    });
+  }
+}
 
 Subscription.init(
   {
@@ -43,10 +54,6 @@ Subscription.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
     },
-    price: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
     description: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -55,18 +62,14 @@ Subscription.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    stripe_price_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
   },
   {
     sequelize: sequelizeInit,
-    modelName: "subscription",
-    tableName: "subscriptions",
+    modelName: 'subscription',
+    tableName: 'subscriptions',
     timestamps: true,
     underscored: true,
-  }
+  },
 );
 
-export { Subscription }
+export { Subscription };

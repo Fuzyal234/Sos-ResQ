@@ -5,11 +5,7 @@ import { UUID } from 'crypto';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {});
 
 class StripeService {
-  async createCheckoutSession(
-    priceId: string,
-    email: string,
-    sos_user_id: UUID,
-  ) {
+  async createCheckoutSession(priceId: string, email: string, sos_user_id: UUID) {
     const success_url = 'https://google.com';
     const cancel_url = 'https://apple.com';
     const customers = await stripe.customers.list({ email, limit: 1 });
@@ -44,20 +40,64 @@ class StripeService {
     return session;
   }
 
-  async createProduct(name: string, description: string, price: number) {
+  async createProduct(name: string, description: string, monthlyPrice: number, yearlyPrice: number) {
     const product = await stripe.products.create({
       name: name,
-      description: 'SOS Subscription',
+      description: description,
     });
-    const stripePrice = await stripe.prices.create({
+    const monthlyStripePrice = await stripe.prices.create({
       product: product.id,
-      unit_amount: price * 100,
+      unit_amount: monthlyPrice * 100,
       currency: 'usd',
       recurring: {
         interval: 'month',
       },
     });
-    return { product, stripePrice };
+    const yearlyStripePrice = await stripe.prices.create({
+      product: product.id,
+      unit_amount: yearlyPrice * 100,
+      currency: 'usd',
+      recurring: {
+        interval: 'year',
+      },
+    });
+    return { product, monthlyStripePrice, yearlyStripePrice };
+  }
+
+  async updateMonthlyPrice(productId: string, newPrice: number) {
+    const prices = await stripe.prices.list({
+      product: productId,
+      active: true,
+      recurring: { interval: 'month' },
+    });
+    for (const price of prices.data) {
+      await stripe.prices.update(price.id, { active: false });
+    }
+    const monthlyPrice = await stripe.prices.create({
+      product: productId,
+      unit_amount: newPrice * 100,
+      currency: 'usd',
+      recurring: { interval: 'month' },
+    });
+    return monthlyPrice;
+  }
+
+  async updateYearlyPrice(productId: string, newPrice: number) {
+    const prices = await stripe.prices.list({
+      product: productId,
+      active: true,
+      recurring: { interval: 'year' },
+    });
+    for (const price of prices.data) {
+      await stripe.prices.update(price.id, { active: false });
+    }
+    const yearlyPrice = await stripe.prices.create({
+      product: productId,
+      unit_amount: newPrice * 100,
+      currency: 'usd',
+      recurring: { interval: 'year' },
+    });
+    return yearlyPrice;
   }
 
   async updateProductPrice(productId: string, newPrice: number) {
@@ -80,10 +120,7 @@ class StripeService {
     return newStripePrice;
   }
 
-  async updateProduct(
-    productId: string,
-    updates: { name?: string; description?: string },
-  ) {
+  async updateProduct(productId: string, updates: { name?: string; description?: string }) {
     console.log('updating product');
     const updatedProduct = await stripe.products.update(productId, updates);
     return updatedProduct;

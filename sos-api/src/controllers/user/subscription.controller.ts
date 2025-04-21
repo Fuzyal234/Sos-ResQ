@@ -6,7 +6,7 @@ import { UUID } from 'crypto';
 import Stripe from 'stripe';
 import stripe from '../../services/stripe.service';
 import stripeService from '../../services/stripe.service';
-import { Car, House, SosUser, SosUserSubscription } from '../../models/index';
+import { Car, House, SosUser, SosUserSubscription, SubscriptionPrices } from '../../models/index';
 import { ProtectedEntities } from '../../models/portected_entities.model';
 import sosUserService from '../../services/user/sosUser.service';
 import { exit } from 'process';
@@ -16,104 +16,89 @@ import subscriptionService from '../../services/admin/subscription.service';
 class SubscriptionController {
   async index(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const subscriptions =
-        await SubscriptionService.getAllSubscriptionsForUser();
+      const subscriptions = await SubscriptionService.getAllSubscriptionsForUser();
       if (subscriptions.length === 0) {
-        return reply
-          .status(404)
-          .send(errorResponse('Subscriptions not found.', 404));
+        return reply.status(404).send(errorResponse('Subscriptions not found.', 404));
       }
-      return reply
-        .status(200)
-        .send(
-          successResponse(
-            'Subscriptions fetched successfully!',
-            subscriptions,
-            200,
-          ),
-        );
+      return reply.status(200).send(successResponse('Subscriptions fetched successfully!', subscriptions, 200));
     } catch (error) {
       console.error('Error fetching agents:', error);
-      return reply
-        .status(500)
-        .send(errorResponse('Internal server error.', 500));
+      return reply.status(500).send(errorResponse('Internal server error.', 500));
     }
   }
 
   async subscribe(request: FastifyRequest, reply: FastifyReply) {
     try {
       const sos_user_id = request.user.sos_user_id as UUID;
-      const sos_user_profile = await sosUserService.getSosUserByUserId(
-        sos_user_id,
-      );
+      const sos_user_profile = await sosUserService.getSosUserByUserId(sos_user_id);
 
       if (sos_user_profile && sos_user_profile.is_profile_completed === false) {
-        return reply
-          .status(400)
-          .send(errorResponse('Please complete your profile first.', 400));
+        return reply.status(400).send(errorResponse('Please complete your profile first.', 400));
       }
       const existingSubscription = await SosUserSubscription.findOne({
         where: { sos_user_id },
       });
       if (existingSubscription) {
-        return reply
-          .status(400)
-          .send(errorResponse('You already have an active subscription.', 400));
+        return reply.status(400).send(errorResponse('You already have an active subscription.', 400));
       }
 
-      const subscriptionId = (request.body as { subscription_id: UUID })
-        .subscription_id;
-      const auto_renewal = (request.body as { auto_renewal: boolean })
-        .auto_renewal;
+      const { subscription_id, period, auto_renewal } = request.body as {
+        subscription_id: UUID;
+        auto_renewal: boolean;
+        period: string;
+      };
+
       const subscriptionData = {
         sos_user_id,
-        subscription_id: subscriptionId,
+        subscription_id: subscription_id,
         auto_renewal,
       } as CreateSosUserSubscriptionDTO;
 
-      const subscription = await SubscriptionService.getSubscriptionById(
-        subscriptionId,
-      );
+      const subscription = await SubscriptionService.getSubscriptionById(subscription_id);
       if (!subscription) {
-        return reply
-          .status(404)
-          .send(errorResponse('Subscription not found.', 404));
+        return reply.status(404).send(errorResponse('Subscription not found.', 404));
       }
       let car;
-      if (subscription?.dataValues.includes_car) {
+      if (subscription?.includes_car) {
         car = await Car.findOne({ where: { sos_user_id } });
         if (!car) {
           return reply.status(404).send(errorResponse('Car not found.', 404));
         }
       }
       let house;
-      if (subscription?.dataValues.includes_house) {
+      if (subscription?.includes_house) {
         house = await House.findOne({ where: { sos_user_id } });
         if (!house) {
           return reply.status(404).send(errorResponse('House not found.', 404));
         }
       }
       // const subscriptionData = request.body as CreateSosUserSubscriptionDTO;
-      const priceId = subscription?.dataValues.stripe_price_id;
+      let priceId = null;
+      let price = null;
+
+      if (period === 'year') {
+        // const yearly = subscription?.subscription_prices?.find(
+        //   (price) => price.dataValues.period === 'year',
+        // );
+        // if (!yearly) {
+        //   return reply.status(400).send(errorResponse('Yearly price not found for this subscription.', 400));
+        // }
+        priceId = subscription?.stripe_yearly_price_id;
+        price = subscription.yearly_price;
+      } else {
+        priceId = subscription?.stripe_monthly_price_id;
+        price = subscription.monthly_price;
+      }
+
       const email = sos_user_profile?.email;
       if (!email) {
         throw new Error('Email is required');
       }
-      const sos_subscription =
-        await SubscriptionService.createSosUserSubscription(subscriptionData);
+      const sos_subscription = await SubscriptionService.createSosUserSubscription(subscriptionData);
 
-      const session = await stripeService.createCheckoutSession(
-        priceId,
-        email,
-        sos_user_id,
-      );
+      const session = await stripeService.createCheckoutSession(priceId, email, sos_user_id);
 
-      paymentService.createPayment(
-        sos_user_id,
-        sos_subscription.dataValues.id,
-        subscription?.dataValues.price,
-        session.id,
-      );
+      paymentService.createPayment(sos_user_id, sos_subscription.dataValues.id, price, session.id);
       // if (subscription?.dataValues.members_count === 1) {
       ProtectedEntities.create({
         entity_id: sos_user_id,
@@ -147,9 +132,7 @@ class SubscriptionController {
         );
     } catch (error) {
       console.error('Error creating agent:', error);
-      return reply
-        .status(500)
-        .send(errorResponse('Internal server error.', 500));
+      return reply.status(500).send(errorResponse('Internal server error.', 500));
     }
   }
 
@@ -199,9 +182,7 @@ class SubscriptionController {
       }
     }
 
-    return reply
-      .status(200)
-      .send(successResponse('Webhook received successfully!', {}, 200));
+    return reply.status(200).send(successResponse('Webhook received successfully!', {}, 200));
   }
 }
 export default new SubscriptionController();

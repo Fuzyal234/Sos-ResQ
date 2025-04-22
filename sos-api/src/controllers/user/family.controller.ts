@@ -1,59 +1,50 @@
 import { sendEmail } from '../../middlewares/email';
 import { v4 as uuidv4 } from 'uuid';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { FamilyMember } from '../../models/index';
+import { FamilyMember, Subscription } from '../../models/index';
 import { SosUserSubscription, User } from '../../models/index';
 import { errorResponse, successResponse } from '../../helper/responses';
 import { UserWithSosUser } from '../../types/user';
 import { ProtectedEntities } from '../../models/portected_entities.model';
 import e from 'cors';
+import { UUID } from 'crypto';
 
 class FamilyController {
   async inviteMember(request: FastifyRequest, reply: FastifyReply) {
     const { email, user_subscription_id } = request.body as {
       email: string;
-      user_subscription_id: string;
+      user_subscription_id: UUID;
     };
     const invited_by = request.user.sos_user_id;
 
     try {
       const user_subscription = await SosUserSubscription.findOne({
         where: { id: user_subscription_id },
-        include: ['subscription'],
+        include: [{ model: Subscription, as: 'subscription' }],
       });
       if (!user_subscription) {
-        return reply
-          .status(404)
-          .send(errorResponse('User subscription not found', 404));
+        return reply.status(404).send(errorResponse('User subscription not found', 404));
       }
       if (
         user_subscription.dataValues.status === 'inactive' ||
         user_subscription.dataValues.status === 'cancelled' ||
         user_subscription.dataValues.status === 'expired'
       ) {
-        return reply
-          .status(400)
-          .send(errorResponse('User subscription is not active', 400));
+        return reply.status(400).send(errorResponse('User subscription is not active', 400));
       }
+      const subscription = user_subscription.get('subscription') as Subscription;
       const existingInvitedMembersCount = await FamilyMember.count({
         where: {
           user_subscription_id,
         },
       });
 
-      if (
-        existingInvitedMembersCount >=
-        user_subscription.dataValues.subscription.dataValues.members_count
-      ) {
-        return reply
-          .status(400)
-          .send(errorResponse('You cannot invite more members', 400));
+      if (existingInvitedMembersCount >= subscription.dataValues.members_count) {
+        return reply.status(400).send(errorResponse('You cannot invite more members', 400));
       }
 
-      if (user_subscription.dataValues.members_count === 1) {
-        return reply
-          .status(400)
-          .send(errorResponse('You cannot invite more members', 400));
+      if (subscription.dataValues.members_count === 1) {
+        return reply.status(400).send(errorResponse('You cannot invite more members', 400));
       }
 
       const user = (await User.findOne({
@@ -69,19 +60,10 @@ class FamilyController {
       });
 
       if (userFamily && userFamily.dataValues.status === 'pending') {
-        return reply
-          .status(400)
-          .send(
-            errorResponse(
-              'There is already an invitation pending for this user',
-              400,
-            ),
-          );
+        return reply.status(400).send(errorResponse('There is already an invitation pending for this user', 400));
       }
       if (userFamily) {
-        return reply
-          .status(400)
-          .send(errorResponse('User is already a member of a family', 400));
+        return reply.status(400).send(errorResponse('User is already a member of a family', 400));
       }
 
       const invitationToken = uuidv4();
@@ -103,17 +85,13 @@ class FamilyController {
                 <p>Click <a href="${invitationLink}">here</a> to accept the invitation.</p>`,
       );
 
-      return reply
-        .status(200)
-        .send(successResponse('Invitation sent successfully.', null, 200));
+      return reply.status(200).send(successResponse('Invitation sent successfully.', null, 200));
     } catch (err) {
       console.error('Error inviting family member:', err);
       if (err instanceof Error) {
         return reply.status(500).send(errorResponse(err.message, 500));
       } else {
-        return reply
-          .status(500)
-          .send(errorResponse('Internal server error', 500));
+        return reply.status(500).send(errorResponse('Internal server error', 500));
       }
     }
   }
@@ -126,19 +104,13 @@ class FamilyController {
         where: { id: token, status: 'pending' },
       });
       if (!invitation) {
-        return reply
-          .status(400)
-          .send(errorResponse('Invalid or expired invitation.', 400));
+        return reply.status(400).send(errorResponse('Invalid or expired invitation.', 400));
       }
 
-      return reply
-        .status(200)
-        .send(successResponse('Invitation is valid.', { token }, 200));
+      return reply.status(200).send(successResponse('Invitation is valid.', { token }, 200));
     } catch (err) {
       console.error('Error validating invitation:', err);
-      return reply
-        .status(500)
-        .send(errorResponse('Internal server error', 500));
+      return reply.status(500).send(errorResponse('Internal server error', 500));
     }
   }
 
@@ -151,20 +123,11 @@ class FamilyController {
       });
 
       if (!invitation) {
-        return reply
-          .status(400)
-          .send(errorResponse('Invalid or expired invitation.', 400));
+        return reply.status(400).send(errorResponse('Invalid or expired invitation.', 400));
       }
 
       if (invitation.dataValues.sos_user_id !== request.user.sos_user_id) {
-        return reply
-          .status(400)
-          .send(
-            errorResponse(
-              'You are not authorized to accept this invitation.',
-              400,
-            ),
-          );
+        return reply.status(400).send(errorResponse('You are not authorized to accept this invitation.', 400));
       }
 
       invitation.set('status', 'accepted');
@@ -172,19 +135,14 @@ class FamilyController {
       ProtectedEntities.create({
         entity_id: invitationAccepted.dataValues.sos_user_id,
         entity_type: 'sos_user',
-        sos_user_subscription_id:
-          invitationAccepted.dataValues.user_subscription_id,
+        sos_user_subscription_id: invitationAccepted.dataValues.user_subscription_id,
       });
       console.log('invitationAccepted :>> ', invitationAccepted);
 
-      return reply
-        .status(200)
-        .send(successResponse('Invitation accepted successfully.', null, 200));
+      return reply.status(200).send(successResponse('Invitation accepted successfully.', null, 200));
     } catch (err) {
       console.error('Error accepting invitation:', err);
-      return reply
-        .status(500)
-        .send(errorResponse('Internal server error', 500));
+      return reply.status(500).send(errorResponse('Internal server error', 500));
     }
   }
 }

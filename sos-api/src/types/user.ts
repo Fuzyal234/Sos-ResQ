@@ -1,4 +1,5 @@
 import { OAuth2Namespace } from '@fastify/oauth2';
+import { UUID } from 'crypto';
 import { OAuth2 } from 'nodemailer/lib/smtp-connection';
 
 interface CreateUserDTO {
@@ -50,8 +51,8 @@ interface UpdateContactDTO {
 }
 
 interface SosUserDTO {
-  id: string;
-  user_id: string;
+  id: UUID;
+  user_id: UUID;
   email: string;
   first_name: string | null;
   last_name: string | null;
@@ -74,18 +75,18 @@ interface FastifyInstance {
 }
 
 interface UserWithSosUser {
-  id: string;
+  id: UUID;
   email: string;
-  'sos_user.id': string;
-  'sos_user.user_id': string;
+  'sos_user.id': UUID;
+  'sos_user.user_id': UUID;
   'sos_user.address': string | null;
   'sos_user.avatar_url': string | null;
   'sos_user.is_profile_completed': boolean;
   'sos_user.contact_added': boolean;
 }
 interface SosUserWithUser {
-  id: string;
-  user_id: string;
+  id: UUID;
+  user_id: UUID;
   address: string | null;
   avatar_url: string | null;
   is_profile_completed: boolean;

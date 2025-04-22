@@ -1,8 +1,9 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
+import { UUID } from 'crypto';
 
 interface SosUserAttributes {
-  id: string;
+  id: UUID;
   user_id: string;
   address?: string;
   avatar_url?: string;

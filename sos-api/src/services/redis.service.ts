@@ -38,20 +38,29 @@ class RedisService {
   }
 
   public static getInstance(): RedisService {
+    console.log('getInstance');
     if (!RedisService.instance) {
       RedisService.instance = new RedisService();
     }
     return RedisService.instance;
   }
-
   public async close() {
-    if (this.sosQueue) {
-      await this.sosQueue.close();
+    debugger;
+    console.log('Closing Redis connection');
+    try {
+      if (this.sosQueue) {
+        await this.sosQueue.close();
+        this.sosQueue = null;
+      }
+      if (this.connection) {
+        console.log('Quitting Redis connection');
+        await this.connection.quit();
+        this.connection = null;
+      }
+      this.isConnected = false;
+    } catch (error) {
+      console.error('Error closing Redis connection:', error);
     }
-    if (this.connection) {
-      await this.connection.quit();
-    }
-    this.isConnected = false;
   }
 
   public async addToQueue(sos_request: SosRequestDTO) {
@@ -71,33 +80,33 @@ class RedisService {
     }
   }
 
-  /**
-   * Notify available agents
-   * @param agentId Agent ID
-   */
-  public async notifyAvailableAgents(sos_user_id: UUID) {
-    try {
-      const availableAgents = await Agent.findAll({
-        where: { status: 'available' },
-        attributes: ['user_id'],
-      });
+  // /**
+  //  * Notify available agents
+  //  * @param agentId Agent ID
+  //  */
+  // public async notifyAvailableAgents(sos_user_id: UUID) {
+  //   try {
+  //     const availableAgents = await Agent.findAll({
+  //       where: { status: 'available' },
+  //       attributes: ['user_id'],
+  //     });
 
-      const agentSockets = new Map();
+  //     const agentSockets = new Map();
 
-      for (const agent of availableAgents) {
-        const agentSocket = agentsRoom.get(agent.dataValues.user_id);
-        if (agentSocket) {
-          agentSockets.set(agent.user_id, agentSocket);
-        }
-      }
+  //     for (const agent of availableAgents) {
+  //       const agentSocket = agentsRoom.get(agent.dataValues.user_id);
+  //       if (agentSocket) {
+  //         agentSockets.set(agent.user_id, agentSocket);
+  //       }
+  //     }
 
-      for (const agentSocket of agentSockets) {
-        agentSocket[1].send(JSON.stringify({ sos_user_id: sos_user_id }));
-      }
-    } catch (error) {
-      console.error('Error notifying available agents:', error);
-    }
-  }
+  //     for (const agentSocket of agentSockets) {
+  //       agentSocket[1].send(JSON.stringify({ sos_user_id: sos_user_id }));
+  //     }
+  //   } catch (error) {
+  //     console.error('Error notifying available agents:', error);
+  //   }
+  // }
 
   public async setUserRoom(userId: string, roomId: string): Promise<void> {
     await this.connection.set(`user_room:${userId}`, roomId);

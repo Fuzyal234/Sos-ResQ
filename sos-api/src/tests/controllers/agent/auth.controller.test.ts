@@ -28,15 +28,12 @@ describe('Agent Auth Controller Tests', () => {
     userId = user.dataValues.id;
 
     const agent = await Agent.create({
-      first_name: 'JohnAgent',
-      last_name: 'Doe',
       user_id: userId,
-      email: 'john@exampleagentauthtest.com',
-      phone_number: '+123442876478',
-      date_of_birth: new Date('1990-01-01T00:00:00Z'),
-      password: passwordHash,
+      status: 'available',
+      created_at: new Date(),
+      updated_at: new Date(),
     });
-    agentId = agent.id;
+    agentId = agent.dataValues.id;
 
     const response2 = await supertest(fastify.server).post('/login/agent').send({
       email: 'john@exampleagentauthtest.com',

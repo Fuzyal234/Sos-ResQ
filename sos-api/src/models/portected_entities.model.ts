@@ -1,17 +1,18 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, Optional } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
 import User from './user.model';
 import { v4 as uuidv4 } from 'uuid';
 import { UUID } from 'crypto';
 
-
-export class ProtectedEntities extends Model {
-
-  public id!: string;
-  public entity_id!: string;
-  public entity_type!: string;
-  public sos_user_subscription_id!: UUID;
+interface ProtectedEntitiesAttributes {
+  id: UUID;
+  entity_id: string;
+  entity_type: string;
+  sos_user_subscription_id: UUID;
 }
+interface ProtectedEntitiesCreationAttributes extends Optional<ProtectedEntitiesAttributes, 'id'> {}
+
+export class ProtectedEntities extends Model<ProtectedEntitiesAttributes, ProtectedEntitiesCreationAttributes> {}
 
 ProtectedEntities.init(
   {
@@ -45,5 +46,5 @@ ProtectedEntities.init(
     tableName: 'protected_entities',
     timestamps: true,
     underscored: true,
-  }
+  },
 );

@@ -1,3 +1,4 @@
+import { UUID } from 'crypto';
 import { number } from 'joi';
 
 enum SubscriptionTier {
@@ -75,8 +76,8 @@ interface SubscriptionPrice {
 }
 
 interface CreateSosUserSubscriptionDTO {
-  sos_user_id: string;
-  subscription_id: string;
+  sos_user_id: UUID;
+  subscription_id: UUID;
   auto_renewal: boolean;
 }
 

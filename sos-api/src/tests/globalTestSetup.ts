@@ -54,9 +54,7 @@ beforeAll(async () => {
     await fastify.listen({ port: 4444, host: '127.0.0.1' });
   } catch (error: any) {
     if (error.code === 'EADDRINUSE') {
-      console.log(
-        'Port 4444 is in use, trying to close existing connections...',
-      );
+      console.log('Port 4444 is in use, trying to close existing connections...');
       // You might want to add logic here to find and close the process using port 4444
       // For now, we'll just try a different port
       await fastify.listen({ port: 4445, host: '127.0.0.1' });
@@ -73,6 +71,8 @@ afterAll(async () => {
   }
   await redisService.close();
   await sequelizeInit.close();
+
+  console.log('All tests completed.');
 });
 
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -80,17 +80,13 @@ ajvFormats(ajv);
 ajvErrors(ajv);
 
 if (fastify) {
-  fastify.setValidatorCompiler(({ schema }: { schema: any }) =>
-    ajv.compile(schema),
-  );
+  fastify.setValidatorCompiler(({ schema }: { schema: any }) => ajv.compile(schema));
   fastify.setErrorHandler((error: any, request: any, reply: any) => {
     if (error.validation) {
       const errors = error.validation.flatMap((e: any) => {
         if (e.keyword === 'errorMessage' && Array.isArray(e.params?.errors)) {
           return e.params.errors.map((innerErr: any) => ({
-            field:
-              innerErr.params?.missingProperty ||
-              innerErr.instancePath.replace('/', ''),
+            field: innerErr.params?.missingProperty || innerErr.instancePath.replace('/', ''),
             message: e.message,
           }));
         }

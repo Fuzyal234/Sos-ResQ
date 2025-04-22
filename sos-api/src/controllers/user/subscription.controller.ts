@@ -149,11 +149,13 @@ class SubscriptionController {
       const invoice = event.data.object;
       const customer_id = invoice.customer ?? '';
       const subscriptionId = invoice.subscription ?? '';
-      const sos_user_subscription = await SosUserSubscription.findOne({
+      const sos_user = await SosUser.findOne({
         where: {
-          stripe_cus_id: customer_id,
+          stripe_cus_id: customer_id.toString(),
         },
+        include: [{ model: SosUserSubscription, as: 'sos_user_subscription' }],
       });
+      const sos_user_subscription = sos_user?.get('sos_user_subscription') as SosUserSubscription;
       if (typeof subscriptionId === 'string') {
         subscriptionService.updateSosUserSubscriptionStatus(
           sos_user_subscription?.dataValues.id,
@@ -166,11 +168,12 @@ class SubscriptionController {
     } else if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const subscriptionId = session.subscription ?? '';
-      const sos_user_subscription = await SosUserSubscription.findOne({
+      const sos_user = await SosUser.findOne({
         where: {
-          stripe_cus_id: session.customer,
+          stripe_cus_id: session.customer?.toString(),
         },
       });
+      const sos_user_subscription = sos_user?.get('sos_user_subscription') as SosUserSubscription;
       if (typeof subscriptionId === 'string') {
         subscriptionService.updateSosUserSubscriptionStatus(
           sos_user_subscription?.dataValues.id,

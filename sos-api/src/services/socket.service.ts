@@ -22,23 +22,23 @@ class SocketService {
    * Notify available agents
    * @param agentId Agent ID
    */
-  public async notifyAvailableAgents(sos_user_id: UUID) {
-    try {
-      const availableAgents = await Agent.findAll({
-        where: { status: 'available' },
-        attributes: ['id'],
-      });
+  // public async notifyAvailableAgents(sos_user_id: UUID) {
+  //   try {
+  //     const availableAgents = await Agent.findAll({
+  //       where: { status: 'available' },
+  //       attributes: ['id'],
+  //     });
 
-      for (const agent of availableAgents) {
-        const agentSocket = agentsRoom.get(agent.dataValues.id);
-        if (agentSocket) {
-          agentSocket.send(JSON.stringify({ sos_user_id }));
-        }
-      }
-    } catch (error) {
-      console.error('Error notifying available agents:', error);
-    }
-  }
+  //     for (const agent of availableAgents) {
+  //       const agentSocket = agentsRoom.get(agent.dataValues.id);
+  //       if (agentSocket) {
+  //         agentSocket.send(JSON.stringify({ sos_user_id }));
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error notifying available agents:', error);
+  //   }
+  // }
 
   /**
    * Assign request to agent

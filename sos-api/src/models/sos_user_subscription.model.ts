@@ -1,19 +1,22 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, Optional } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
+import { UUID } from 'crypto';
 
-class SosUserSubscription extends Model {
-  public id!: string;
-  public sos_user_id!: string;
-  public subscription_id!: string;
-  public start_date!: Date;
-  public end_date!: Date;
-  public status!: string;
-  public auto_renewal!: boolean;
-  public stripe_sub_id?: string;
-
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+interface SosUserSubscriptionAttributes {
+  id: UUID;
+  sos_user_id: UUID;
+  subscription_id: UUID;
+  start_date: Date;
+  end_date: Date;
+  status: string;
+  auto_renewal: boolean;
+  stripe_sub_id?: string;
+  created_at?: Date;
+  updated_at?: Date;
 }
+interface SosUserSubscriptionCreationAttributes extends Optional<SosUserSubscriptionAttributes, 'id'> {}
+
+class SosUserSubscription extends Model<SosUserSubscriptionAttributes, SosUserSubscriptionCreationAttributes> {}
 
 SosUserSubscription.init(
   {

@@ -2,10 +2,11 @@ import supertest from 'supertest';
 import fastify from '../../globalTestSetup';
 import { v4 as uuidv4 } from 'uuid';
 import { Subscription, SosUserSubscription, SosUser } from '../../../models';
+import { UUID } from 'crypto';
 
 let token = '';
-let subscriptionId = '';
-let sosUserId = '';
+let subscriptionId: UUID;
+let sosUserId: UUID;
 let userSubscriptionId = uuidv4();
 const timestamp = Date.now();
 const testEmail = `haydarfamily.ali.${timestamp}@devflovv.com`;
@@ -32,7 +33,7 @@ describe('Family Controller Tests', () => {
       members_count: 5,
       stripe_product_id: 'prod_test_family',
     });
-    subscriptionId = subscription.dataValues.id;
+    subscriptionId = subscription.dataValues.id as UUID;
 
     const start_date = new Date();
     const end_date = new Date(start_date);

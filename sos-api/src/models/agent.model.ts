@@ -1,12 +1,20 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, Optional } from 'sequelize';
 import sequelizeInit from '../config/sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
-class Agent extends Model {
-  public id!: string;
-  public user_id!: string;
-  public status!: string;
+interface AgentAttributes {
+  id: string;
+  user_id: string;
+  status: string;
+  avatar_url?: string;
+
+  created_at?: Date;
+  updated_at?: Date;
 }
+
+interface AgentCreationAttributes extends Optional<AgentAttributes, 'id'> {}
+
+class Agent extends Model<AgentAttributes, AgentCreationAttributes> {}
 
 Agent.init(
   {
@@ -33,6 +41,17 @@ Agent.init(
     avatar_url: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: new Date(),
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: new Date(),
     },
   },
   {

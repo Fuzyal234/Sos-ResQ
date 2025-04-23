@@ -33,16 +33,17 @@ class AgentProfileController {
         created_at: Date;
         updated_at: Date;
       };
+      const user = agent.get('user') as User;
       const agentProfile: AgentWithUser = {
         id: agent.dataValues.id,
-        user_id: agent.dataValues.user.id,
-        first_name: agent.dataValues.user.first_name,
-        last_name: agent.dataValues.user.last_name,
-        email: agent.dataValues.user.email,
-        date_of_birth: agent.dataValues.user.date_of_birth,
-        avatar_url: agent.dataValues.user.avatar_url,
-        created_at: agent.dataValues.created_at,
-        updated_at: agent.dataValues.updated_at,
+        user_id: agent.get('user_id') as string,
+        first_name: user.get('first_name') as string,
+        last_name: user.get('last_name') as string,
+        email: user.get('email') as string,
+        date_of_birth: user.get('date_of_birth') as Date,
+        avatar_url: agent.dataValues.avatar_url as string | null,
+        created_at: agent.dataValues.created_at as Date,
+        updated_at: agent.dataValues.updated_at as Date,
       };
 
       return reply.status(200).send(successResponse('Agent profile fetched successfully.', agentProfile, 200));

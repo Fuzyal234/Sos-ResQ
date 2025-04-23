@@ -5,6 +5,7 @@ import { Server, ServerOptions } from 'socket.io';
 import { io as createClient } from 'socket.io-client';
 import jwt from 'jsonwebtoken';
 import redisService from '../../services/redis.service';
+import { UUID } from 'crypto';
 
 jest.mock('../../services/redis.service');
 
@@ -14,6 +15,7 @@ let agentId: string;
 let agentToken: string;
 let room_id: string;
 let sosUserId: string;
+let request_id: UUID;
 
 interface MessageData {
   message: string;
@@ -126,6 +128,7 @@ describe('Socket.IO Plugin', () => {
       })
       .set('Authorization', `Bearer ${token}`);
     console.log('sosRequestResponse.body :>> ', sosRequestResponse.body);
+    request_id = sosRequestResponse.body.data.sos_request.id;
     expect(sosRequestResponse.status).toBe(201);
 
     room_id = `room_${sosUserId}`;
@@ -219,6 +222,7 @@ describe('Socket.IO Plugin', () => {
           agentSocket.emit('connect_to_sos_user', {
             room_id: room_id,
             sos_user_id: sosUserId,
+            request_id: request_id,
           });
 
           // Give time for socket to process joining the room

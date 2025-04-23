@@ -3,9 +3,10 @@ import sequelizeInit from '../config/sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { Payment } from './payment.model';
 import { SubscriptionPrices } from './subscription_prices.model';
+import { UUID } from 'crypto';
 
 interface SubscriptionAttributes {
-  id: string;
+  id: UUID;
   name: string;
   includes_house: boolean;
   includes_car: boolean;
@@ -17,7 +18,7 @@ interface SubscriptionAttributes {
   subscription_prices?: SubscriptionPrices[];
 }
 
-interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, 'id'> { }
+interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, 'id'> {}
 
 class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> {
   public subscription_prices?: SubscriptionPrices[];
@@ -25,7 +26,7 @@ class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAtt
   public static associate(models: any) {
     Subscription.hasMany(models.SubscriptionPrices, {
       foreignKey: 'subscription_id',
-      as: 'subscription_prices'
+      as: 'subscription_prices',
     });
   }
 }

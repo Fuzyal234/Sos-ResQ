@@ -13,13 +13,7 @@ class AgentService {
         {
           model: User,
           as: 'user',
-          attributes: [
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'phone_number',
-          ],
+          attributes: ['id', 'first_name', 'last_name', 'email', 'phone_number'],
         },
       ],
     });
@@ -31,13 +25,7 @@ class AgentService {
         {
           model: User,
           as: 'user',
-          attributes: [
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'phone_number',
-          ],
+          attributes: ['id', 'first_name', 'last_name', 'email', 'phone_number'],
         },
       ],
     });
@@ -78,14 +66,13 @@ class AgentService {
   public async updateAgent(data: CreateAgentDTO, id: string): Promise<Model> {
     const transaction = await sequelize.transaction();
     try {
-      const agent = await Agent.findOne({ where: { id: id } });
-      if (!agent) {
-        throw new Error('Agent not found');
-      }
-      const user_id = agent.dataValues.user_id;
-      const user = await User.findByPk(user_id);
-      if (!user) {
-        throw new Error('User not found');
+      const agent = await Agent.findOne({
+        where: { id: id },
+        include: [{ model: User, as: 'user' }],
+      });
+      const user = agent?.get('user') as User;
+      if (!agent || !user) {
+        throw new Error('Agent or associated User not found');
       }
 
       await user.update(data, { transaction });
